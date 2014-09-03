@@ -1,0 +1,436 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DFEA071F19B375390066DD5F /* SpearalIOS.h in Headers */ = {isa = PBXBuildFile; fileRef = DFEA071E19B375390066DD5F /* SpearalIOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DFEA072919B375390066DD5F /* SpearalIOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA072819B375390066DD5F /* SpearalIOSTests.swift */; };
+		DFEA073719B377190066DD5F /* SpearalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073619B377190066DD5F /* SpearalType.swift */; };
+		DFEA073819B377190066DD5F /* SpearalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073619B377190066DD5F /* SpearalType.swift */; };
+		DFEA073A19B377600066DD5F /* SpearalEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073919B377600066DD5F /* SpearalEncoder.swift */; };
+		DFEA073B19B377600066DD5F /* SpearalEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073919B377600066DD5F /* SpearalEncoder.swift */; };
+		DFEA073D19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073C19B379500066DD5F /* SpearalEncoderImpl.swift */; };
+		DFEA073E19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073C19B379500066DD5F /* SpearalEncoderImpl.swift */; };
+		DFEA074019B46FD10066DD5F /* SpearalDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073F19B46FD10066DD5F /* SpearalDecoder.swift */; };
+		DFEA074119B46FD10066DD5F /* SpearalDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073F19B46FD10066DD5F /* SpearalDecoder.swift */; };
+		DFEA074319B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA074219B47F4B0066DD5F /* SpearalDecoderImpl.swift */; };
+		DFEA074419B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA074219B47F4B0066DD5F /* SpearalDecoderImpl.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		DF04954119B70FE500744988 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		DF04954219B7101700744988 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DFEA071919B375390066DD5F /* SpearalIOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpearalIOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DFEA071D19B375390066DD5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DFEA071E19B375390066DD5F /* SpearalIOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpearalIOS.h; sourceTree = "<group>"; };
+		DFEA072419B375390066DD5F /* SpearalIOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpearalIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DFEA072719B375390066DD5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DFEA072819B375390066DD5F /* SpearalIOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpearalIOSTests.swift; sourceTree = "<group>"; };
+		DFEA073619B377190066DD5F /* SpearalType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalType.swift; sourceTree = "<group>"; };
+		DFEA073919B377600066DD5F /* SpearalEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SpearalEncoder.swift; sourceTree = "<group>"; };
+		DFEA073C19B379500066DD5F /* SpearalEncoderImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalEncoderImpl.swift; sourceTree = "<group>"; };
+		DFEA073F19B46FD10066DD5F /* SpearalDecoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalDecoder.swift; sourceTree = "<group>"; };
+		DFEA074219B47F4B0066DD5F /* SpearalDecoderImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalDecoderImpl.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DFEA071519B375390066DD5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DFEA072119B375390066DD5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DFEA070F19B375390066DD5F = {
+			isa = PBXGroup;
+			children = (
+				DF04954119B70FE500744988 /* LICENSE */,
+				DF04954219B7101700744988 /* README.md */,
+				DFEA071B19B375390066DD5F /* SpearalIOS */,
+				DFEA072519B375390066DD5F /* SpearalIOSTests */,
+				DFEA071A19B375390066DD5F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DFEA071A19B375390066DD5F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DFEA071919B375390066DD5F /* SpearalIOS.framework */,
+				DFEA072419B375390066DD5F /* SpearalIOSTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DFEA071B19B375390066DD5F /* SpearalIOS */ = {
+			isa = PBXGroup;
+			children = (
+				DFEA073919B377600066DD5F /* SpearalEncoder.swift */,
+				DFEA073F19B46FD10066DD5F /* SpearalDecoder.swift */,
+				DFEA073519B3759D0066DD5F /* Impl */,
+				DFEA071E19B375390066DD5F /* SpearalIOS.h */,
+				DFEA071C19B375390066DD5F /* Supporting Files */,
+			);
+			path = SpearalIOS;
+			sourceTree = "<group>";
+		};
+		DFEA071C19B375390066DD5F /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				DFEA071D19B375390066DD5F /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		DFEA072519B375390066DD5F /* SpearalIOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				DFEA072819B375390066DD5F /* SpearalIOSTests.swift */,
+				DFEA072619B375390066DD5F /* Supporting Files */,
+			);
+			path = SpearalIOSTests;
+			sourceTree = "<group>";
+		};
+		DFEA072619B375390066DD5F /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				DFEA072719B375390066DD5F /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		DFEA073519B3759D0066DD5F /* Impl */ = {
+			isa = PBXGroup;
+			children = (
+				DFEA073619B377190066DD5F /* SpearalType.swift */,
+				DFEA073C19B379500066DD5F /* SpearalEncoderImpl.swift */,
+				DFEA074219B47F4B0066DD5F /* SpearalDecoderImpl.swift */,
+			);
+			name = Impl;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		DFEA071619B375390066DD5F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DFEA071F19B375390066DD5F /* SpearalIOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		DFEA071819B375390066DD5F /* SpearalIOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DFEA072C19B375390066DD5F /* Build configuration list for PBXNativeTarget "SpearalIOS" */;
+			buildPhases = (
+				DFEA071419B375390066DD5F /* Sources */,
+				DFEA071519B375390066DD5F /* Frameworks */,
+				DFEA071619B375390066DD5F /* Headers */,
+				DFEA071719B375390066DD5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpearalIOS;
+			productName = SpearalIOS;
+			productReference = DFEA071919B375390066DD5F /* SpearalIOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		DFEA072319B375390066DD5F /* SpearalIOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DFEA072F19B375390066DD5F /* Build configuration list for PBXNativeTarget "SpearalIOSTests" */;
+			buildPhases = (
+				DFEA072019B375390066DD5F /* Sources */,
+				DFEA072119B375390066DD5F /* Frameworks */,
+				DFEA072219B375390066DD5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpearalIOSTests;
+			productName = SpearalIOSTests;
+			productReference = DFEA072419B375390066DD5F /* SpearalIOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DFEA071019B375390066DD5F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0600;
+				ORGANIZATIONNAME = Spearal;
+				TargetAttributes = {
+					DFEA071819B375390066DD5F = {
+						CreatedOnToolsVersion = 6.0;
+					};
+					DFEA072319B375390066DD5F = {
+						CreatedOnToolsVersion = 6.0;
+					};
+				};
+			};
+			buildConfigurationList = DFEA071319B375390066DD5F /* Build configuration list for PBXProject "SpearalIOS" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = DFEA070F19B375390066DD5F;
+			productRefGroup = DFEA071A19B375390066DD5F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DFEA071819B375390066DD5F /* SpearalIOS */,
+				DFEA072319B375390066DD5F /* SpearalIOSTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DFEA071719B375390066DD5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DFEA072219B375390066DD5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DFEA071419B375390066DD5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DFEA074319B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */,
+				DFEA073719B377190066DD5F /* SpearalType.swift in Sources */,
+				DFEA074019B46FD10066DD5F /* SpearalDecoder.swift in Sources */,
+				DFEA073D19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */,
+				DFEA073A19B377600066DD5F /* SpearalEncoder.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DFEA072019B375390066DD5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DFEA073B19B377600066DD5F /* SpearalEncoder.swift in Sources */,
+				DFEA073E19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */,
+				DFEA074119B46FD10066DD5F /* SpearalDecoder.swift in Sources */,
+				DFEA073819B377190066DD5F /* SpearalType.swift in Sources */,
+				DFEA072919B375390066DD5F /* SpearalIOSTests.swift in Sources */,
+				DFEA074419B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		DFEA072A19B375390066DD5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		DFEA072B19B375390066DD5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		DFEA072D19B375390066DD5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = SpearalIOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DFEA072E19B375390066DD5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = SpearalIOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		DFEA073019B375390066DD5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = SpearalIOSTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		DFEA073119B375390066DD5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = SpearalIOSTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DFEA071319B375390066DD5F /* Build configuration list for PBXProject "SpearalIOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFEA072A19B375390066DD5F /* Debug */,
+				DFEA072B19B375390066DD5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DFEA072C19B375390066DD5F /* Build configuration list for PBXNativeTarget "SpearalIOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFEA072D19B375390066DD5F /* Debug */,
+				DFEA072E19B375390066DD5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DFEA072F19B375390066DD5F /* Build configuration list for PBXNativeTarget "SpearalIOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFEA073019B375390066DD5F /* Debug */,
+				DFEA073119B375390066DD5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DFEA071019B375390066DD5F /* Project object */;
+}
