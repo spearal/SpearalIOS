@@ -32,15 +32,29 @@ private class StringIndexMap {
         return -1
     }
 }
+private class IdentityIndexMap {
+    
+    private var references:Dictionary<UnsafePointer<Void>, Int> = Dictionary<UnsafePointer<Void>, Int>()
+    
+    func putIfAbsent(p:UnsafePointer<Void>) -> Int {
+        if let index = references[p] {
+            return index
+        }
+        references[p] = references.count
+        return -1;
+    }
+}
 
 class SpearalEncoderImpl : SpearalEncoder {
     
     let output:SpearalOutput
     private let sharedStrings:StringIndexMap
+    private let sharedObjects:IdentityIndexMap
     
     required init(output: SpearalOutput) {
         self.output = output
         self.sharedStrings = StringIndexMap()
+        self.sharedObjects = IdentityIndexMap()
     }
     
     func writeAny(any:Any?) {
@@ -110,7 +124,7 @@ class SpearalEncoderImpl : SpearalEncoder {
         output.write(value)
     }
     
-    func writeDouble(var value:Double) {
+    func writeDouble(value:Double) {
         // value != NaN, +/- Infinity and -0.0
         if value.isFinite && value.floatingPointClass != FloatingPointClassification.NegativeZero &&
            value >= Double(Int.min) && value <= Double(Int.max) {
@@ -147,17 +161,8 @@ class SpearalEncoderImpl : SpearalEncoder {
             }
         }
         
-        let doubleToLongBits:UInt64 = unsafeBitCast(value, UInt64.self)
-        
         output.write(SpearalType.FLOATING.toRaw())
-        output.write(doubleToLongBits >> 56)
-        output.write(doubleToLongBits >> 48)
-        output.write(doubleToLongBits >> 40)
-        output.write(doubleToLongBits >> 32)
-        output.write(doubleToLongBits >> 24)
-        output.write(doubleToLongBits >> 16)
-        output.write(doubleToLongBits >> 8)
-        output.write(doubleToLongBits)
+        writeUInt64(unsafeBitCast(value, UInt64.self))
     }
     
     func writeString(value:String) {
@@ -165,8 +170,10 @@ class SpearalEncoderImpl : SpearalEncoder {
     }
     
     func writeByteArray(value:[UInt8]) {
-        writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: value.count)
-        output.write(value)
+        if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
+            writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: value.count)
+            output.write(value)
+        }
     }
     
     private func writeStringData(type:SpearalType, value:String) {
@@ -193,6 +200,16 @@ class SpearalEncoderImpl : SpearalEncoder {
         return false
     }
     
+    private func putAndWriteObjectReference(type:SpearalType, p:UnsafePointer<Void>) -> Bool {
+        let index = sharedObjects.putIfAbsent(p)
+        if index != -1 {
+            writeTypeUnsignedInt32(type.toRaw() | 0x08, value: index)
+            return true
+        }
+        return false
+    }
+    
+    
     private func writeTypeUnsignedInt32(type:UInt8, value:Int) {
         let length0 = unsignedIntLength0(value)
         output.write(type | length0)
@@ -213,8 +230,14 @@ class SpearalEncoderImpl : SpearalEncoder {
     }
     
     private func writeUInt64(value:UInt64) {
-        output.write(UInt8(value >> 56))
-        //output.write((value >> 56) as? UInt8)
+        output.write(value >> 56)
+        output.write(value >> 48)
+        output.write(value >> 40)
+        output.write(value >> 32)
+        output.write(value >> 24)
+        output.write(value >> 16)
+        output.write(value >> 8)
+        output.write(value)
     }
     
     private func unsignedIntLength0(value:Int) -> UInt8 {

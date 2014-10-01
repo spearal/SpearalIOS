@@ -23,11 +23,13 @@ import Foundation
 class SpearalDecoderImpl: SpearalDecoder {
     
     let input: SpearalInput
-    private var sharedString:[String]
+    private var sharedStrings:[String]
+    private var sharedObjects:[UnsafePointer<Void>]
     
     required init(input: SpearalInput) {
         self.input = input
-        self.sharedString = [String]()
+        self.sharedStrings = [String]()
+        self.sharedObjects = [UnsafePointer<Void>]()
     }
     
     func readAny() -> Any? {
@@ -56,7 +58,7 @@ class SpearalDecoderImpl: SpearalDecoder {
                 return readString(parameterizedType)
                 
             case .BYTE_ARRAY:
-                println("BYTE_ARRAY");
+                return readByteArray(parameterizedType)
                 
             case .DATE_TIME:
                 println("DATE_TIME");
@@ -156,7 +158,7 @@ class SpearalDecoderImpl: SpearalDecoder {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isStringReference(parameterizedType) {
-            return sharedString[indexOrLength]
+            return sharedStrings[indexOrLength]
         }
         
         if indexOrLength == 0 {
@@ -165,7 +167,19 @@ class SpearalDecoderImpl: SpearalDecoder {
         
         let utf8:[UInt8] = input.read(indexOrLength)
         let value = NSString(bytes: utf8, length: utf8.count, encoding: NSUTF8StringEncoding) as String
-        sharedString.append(value)
+        sharedStrings.append(value)
+        return value
+    }
+    
+    func readByteArray(parameterizedType:UInt8) -> [UInt8] {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            return unsafeBitCast(sharedObjects[indexOrLength], [UInt8].self)
+        }
+        
+        let value:[UInt8] = input.read(indexOrLength)
+        sharedObjects.append(unsafeBitCast(value, UnsafePointer<Void>.self))
         return value
     }
     

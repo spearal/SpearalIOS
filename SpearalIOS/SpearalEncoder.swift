@@ -25,7 +25,7 @@ protocol SpearalOutput {
     func write(byte:UInt8)
     func write(byte:UInt64)
     func write(byte:Int)
-    func write(var bytes:[UInt8])
+    func write(bytes:[UInt8])
 }
 
 protocol SpearalEncoder {

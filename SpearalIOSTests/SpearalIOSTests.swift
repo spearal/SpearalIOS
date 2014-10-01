@@ -337,7 +337,37 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(sc1 as String, s1)
         XCTAssertEqual(sc2 as String, s1)
         XCTAssertTrue(sc1 as NSString === sc2 as NSString)
-   }
+    }
+    
+    func testByteArray() {
+        XCTAssertEqual(encodeDecode([UInt8](), expectedSize: 2) as [UInt8], [UInt8]())
+        
+        var b:[UInt8] = [0]
+        for i in 0x00...0xff {
+            b[0] = UInt8(i)
+            XCTAssertEqual(encodeDecode(b, expectedSize: 3) as [UInt8], b)
+        }
+        
+        b = []
+        for i in 0x00...0xff {
+            b.append(UInt8(i))
+        }
+        XCTAssertEqual(encodeDecode(b, expectedSize: b.count + 3) as [UInt8], b)
+        
+        // Test references
+        
+        let b1:[UInt8] = [0, 1, 2]
+        let b2:[UInt8] = [0, 1, 2]
+        
+        XCTAssertTrue(unsafeBitCast(b1, UnsafePointer<Void>.self) == unsafeBitCast(b1, UnsafePointer<Void>.self))
+        XCTAssertTrue(unsafeBitCast(b1, UnsafePointer<Void>.self) != unsafeBitCast(b2, UnsafePointer<Void>.self))
+
+        var (bc1, bc2) = encodeDecode(b1, any2: b2)
+        XCTAssertTrue(unsafeBitCast(bc1 as [UInt8], UnsafePointer<Void>.self) != unsafeBitCast(bc2 as [UInt8], UnsafePointer<Void>.self))
+        
+        (bc1, bc2) = encodeDecode(b1, any2: b1)
+        XCTAssertTrue(unsafeBitCast(bc1 as [UInt8], UnsafePointer<Void>.self) == unsafeBitCast(bc2 as [UInt8], UnsafePointer<Void>.self))
+    }
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1) -> Any? {
         let out = InMemorySpearalOutput()
