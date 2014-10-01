@@ -151,7 +151,7 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertFalse(encodeDecode(false, expectedSize: 1) as Bool)
     }
     
-    func xtestInt() {
+    func testInt() {
         XCTAssertEqual(encodeDecode(Int.min, expectedSize: 9) as Int, Int.min)
         XCTAssertEqual(encodeDecode(Int.min + 1, expectedSize: 9) as Int, Int.min + 1)
         
@@ -364,9 +364,13 @@ class SpearalIOSTests: XCTestCase {
 
         var (bc1, bc2) = encodeDecode(b1, any2: b2)
         XCTAssertTrue(unsafeBitCast(bc1 as [UInt8], UnsafePointer<Void>.self) != unsafeBitCast(bc2 as [UInt8], UnsafePointer<Void>.self))
+        XCTAssertEqual(bc1 as [UInt8], b1)
+        XCTAssertEqual(bc2 as [UInt8], b2)
         
         (bc1, bc2) = encodeDecode(b1, any2: b1)
         XCTAssertTrue(unsafeBitCast(bc1 as [UInt8], UnsafePointer<Void>.self) == unsafeBitCast(bc2 as [UInt8], UnsafePointer<Void>.self))
+        XCTAssertEqual(bc1 as [UInt8], b1)
+        XCTAssertEqual(bc2 as [UInt8], b1)
     }
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1) -> Any? {
