@@ -71,6 +71,8 @@ class SpearalEncoderImpl : SpearalEncoder {
             writeString(value)
         case let value as [UInt8]:
             writeByteArray(value)
+        case let value as NSData:
+            writeNSData(value)
         default:
             println("???: \(reflect(any).valueType) / \(_stdlib_getTypeName(any!))")
         }
@@ -173,6 +175,15 @@ class SpearalEncoderImpl : SpearalEncoder {
         if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
             writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: value.count)
             output.write(value)
+        }
+    }
+    
+    func writeNSData(value:NSData) {
+        if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
+            var bytes = [UInt8](count: value.length, repeatedValue: 0)
+            value.getBytes(&bytes, length: value.length)
+            writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: bytes.count)
+            output.write(bytes)
         }
     }
     

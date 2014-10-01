@@ -354,6 +354,10 @@ class SpearalIOSTests: XCTestCase {
         }
         XCTAssertEqual(encodeDecode(b, expectedSize: b.count + 3) as [UInt8], b)
         
+        b = [0, 1, 2]
+        let data = NSData(bytes: b, length: b.count)
+        XCTAssertEqual(encodeDecode(data, expectedSize: 5) as [UInt8], b)
+        
         // Test references
         
         let b1:[UInt8] = [0, 1, 2]
