@@ -23,9 +23,11 @@ import Foundation
 class SpearalDecoderImpl: SpearalDecoder {
     
     let input: SpearalInput
+    private var sharedString:[String]
     
     required init(input: SpearalInput) {
         self.input = input
+        self.sharedString = [String]()
     }
     
     func readAny() -> Any? {
@@ -151,13 +153,20 @@ class SpearalDecoderImpl: SpearalDecoder {
     }
     
     func readString(parameterizedType:UInt8) -> String {
-        let count = readIndexOrLength(parameterizedType)
-        if count == 0 {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isStringReference(parameterizedType) {
+            return sharedString[indexOrLength]
+        }
+        
+        if indexOrLength == 0 {
             return ""
         }
         
-        let utf8:[UInt8] = input.read(count)
-        return NSString(bytes: utf8, length: utf8.count, encoding: NSUTF8StringEncoding) as String
+        let utf8:[UInt8] = input.read(indexOrLength)
+        let value = NSString(bytes: utf8, length: utf8.count, encoding: NSUTF8StringEncoding) as String
+        sharedString.append(value)
+        return value
     }
     
     private func doubleToUInt8MutablePointer(pointer:UnsafeMutablePointer<Double>) -> UnsafeMutablePointer<UInt8> {
@@ -182,5 +191,13 @@ class SpearalDecoderImpl: SpearalDecoder {
         }
         value |= Int(input.read())
         return value
+    }
+    
+    private class func isObjectReference(parameterizedType:UInt8) -> Bool {
+        return ((parameterizedType & 0x08) != 0)
+    }
+    
+    private class func isStringReference(parameterizedType:UInt8) -> Bool {
+        return ((parameterizedType & 0x04) != 0)
     }
 }
