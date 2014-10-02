@@ -377,6 +377,17 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(bc2 as [UInt8], b1)
     }
     
+    func testDate() {
+        var date = NSDate()
+        XCTAssertEqual(encodeDecode(date) as NSDate, date)
+        
+        let format = NSDateFormatter()
+        format.dateFormat = "yyyy-MM-dd HH:mm:ss SSS"
+
+        date = format.dateFromString("1999-12-03 23:45:59 999")!
+        XCTAssertEqual(encodeDecode(date) as NSDate, date)
+    }
+    
     private func encodeDecode(any:Any?, expectedSize:Int = -1) -> Any? {
         let out = InMemorySpearalOutput()
         let encoder:SpearalEncoder = SpearalEncoderImpl(output: out)

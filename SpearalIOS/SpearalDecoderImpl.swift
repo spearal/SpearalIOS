@@ -23,13 +23,19 @@ import Foundation
 class SpearalDecoderImpl: SpearalDecoder {
     
     let input: SpearalInput
+
     private var sharedStrings:[String]
     private var sharedObjects:[UnsafePointer<Void>]
     
+    private let calendar:NSCalendar
+    
     required init(input: SpearalInput) {
         self.input = input
+
         self.sharedStrings = [String]()
         self.sharedObjects = [UnsafePointer<Void>]()
+        
+        self.calendar = NSCalendar(identifier: NSGregorianCalendar)
     }
     
     func readAny() -> Any? {
@@ -47,12 +53,12 @@ class SpearalDecoderImpl: SpearalDecoder {
             case .INTEGRAL:
                 return readIntegral(parameterizedType)
             case .BIG_INTEGRAL:
-                println("BIG_INTEGRAL");
+                println("BIG_INTEGRAL")
                 
             case .FLOATING:
                 return readFloating(parameterizedType)
             case .BIG_FLOATING:
-                println("BIG_FLOATING");
+                println("BIG_FLOATING")
                 
             case .STRING:
                 return readString(parameterizedType)
@@ -61,19 +67,19 @@ class SpearalDecoderImpl: SpearalDecoder {
                 return readByteArray(parameterizedType)
                 
             case .DATE_TIME:
-                println("DATE_TIME");
+                return readDateTime(parameterizedType)
                 
             case .COLLECTION:
-                println("COLLECTION");
+                println("COLLECTION")
             case .MAP:
-                println("MAP");
+                println("MAP")
                 
             case .ENUM:
-                println("ENUM");
+                println("ENUM")
             case .CLASS:
-                println("CLASS");
+                println("CLASS")
             case .BEAN:
-                println("BEAN");
+                println("BEAN")
             }
         }
 
@@ -181,6 +187,42 @@ class SpearalDecoderImpl: SpearalDecoder {
         let value:[UInt8] = input.read(indexOrLength)
         sharedObjects.append(unsafeBitCast(value, UnsafePointer<Void>.self))
         return value
+    }
+    
+    func readDateTime(parameterizedType:UInt8) -> NSDate {
+        var components = NSDateComponents()
+
+        if (parameterizedType & 0x08) != 0 {
+            let month = input.read()
+            components.month = Int(month & 0x0f)
+            components.day = Int(input.read())
+
+            components.year = readUnsignedIntegerValue((month >> 4) & 0x03)
+            if (month & 0x80) != 0 {
+                components.year = -components.year
+            }
+            components.year += 2000
+        }
+        
+        if (parameterizedType & 0x04) != 0 {
+            let hours = input.read()
+            components.hour = Int(hours & 0x1f)
+            components.minute = Int(input.read())
+            components.second = Int(input.read())
+            
+            let subsecondsType = (parameterizedType & 0x03)
+            if subsecondsType != 0 {
+                components.nanosecond = readUnsignedIntegerValue(hours >> 5);
+                if subsecondsType == 2 {
+                    components.nanosecond *= 1000;
+                }
+                else if subsecondsType == 3 {
+                    components.nanosecond *= 1000000;
+                }
+            }
+        }
+        
+        return calendar.dateFromComponents(components)!
     }
     
     private func doubleToUInt8MutablePointer(pointer:UnsafeMutablePointer<Double>) -> UnsafeMutablePointer<UInt8> {

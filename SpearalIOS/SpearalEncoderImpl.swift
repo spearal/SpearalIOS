@@ -44,17 +44,22 @@ private class IdentityIndexMap {
         return -1;
     }
 }
-
 class SpearalEncoderImpl : SpearalEncoder {
     
     let output:SpearalOutput
+
     private let sharedStrings:StringIndexMap
     private let sharedObjects:IdentityIndexMap
     
+    private let calendar:NSCalendar
+    
     required init(output: SpearalOutput) {
         self.output = output
+        
         self.sharedStrings = StringIndexMap()
         self.sharedObjects = IdentityIndexMap()
+        
+        self.calendar = NSCalendar(identifier: NSGregorianCalendar)
     }
     
     func writeAny(any:Any?) {
@@ -73,6 +78,8 @@ class SpearalEncoderImpl : SpearalEncoder {
             writeByteArray(value)
         case let value as NSData:
             writeNSData(value)
+        case let value as NSDate:
+            writeNSDate(value)
         default:
             println("???: \(reflect(any).valueType) / \(_stdlib_getTypeName(any!))")
         }
@@ -184,6 +191,57 @@ class SpearalEncoderImpl : SpearalEncoder {
             value.getBytes(&bytes, length: value.length)
             writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: bytes.count)
             output.write(bytes)
+        }
+    }
+    
+    func writeNSDate(value:NSDate) {
+        let components = calendar.components(
+            .CalendarUnitYear | .CalendarUnitMonth | .CalendarUnitDay |
+            .CalendarUnitHour | .CalendarUnitMinute | .CalendarUnitSecond | .CalendarUnitNanosecond, fromDate: value)
+        
+        var nanoseconds:Int = components.nanosecond
+        
+        var parameters:UInt8 = 0x0c
+        if nanoseconds != 0 {
+            if nanoseconds % 1000 == 0 {
+                if (nanoseconds % 1000000 == 0) {
+                    nanoseconds /= 1000000;
+                    parameters |= 0x03;
+                }
+                else {
+                    nanoseconds /= 1000;
+                    parameters |= 0x02;
+                }
+            }
+            else {
+                parameters |= 0x01;
+            }
+        }
+        
+        output.write(SpearalType.DATE_TIME.toRaw() | parameters)
+
+        var inverse:UInt8 = 0x00;
+        var year = components.year - 2000;
+        if year < 0 {
+            inverse = 0x80;
+            year = -year;
+        }
+        var length0:UInt8 = unsignedIntLength0(year);
+        output.write(inverse | (length0 << 4) | UInt8(components.month))
+        output.write(UInt8(components.day))
+        writeUnsignedInt32Value(year, length0: length0);
+        
+        if nanoseconds == 0 {
+            output.write(UInt8(components.hour))
+            output.write(UInt8(components.minute))
+            output.write(UInt8(components.second))
+        }
+        else {
+            length0 = unsignedIntLength0(nanoseconds);
+            output.write((length0 << 5) | UInt8(components.hour))
+            output.write(UInt8(components.minute))
+            output.write(UInt8(components.second))
+            writeUnsignedInt32Value(nanoseconds, length0: length0);
         }
     }
     
