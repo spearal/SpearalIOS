@@ -81,49 +81,6 @@ class SpearalIOSTests: XCTestCase {
     func testSpearalType() {
         for i in 0x00...0xff {
             if let type = SpearalType.valueOf(UInt8(i)) {
-
-                /*
-                switch type {
-                case .NULL:
-                    println("NULL");
-                case .TRUE:
-                    println("TRUE");
-                case .FALSE:
-                    println("FALSE");
-                    
-                case .INTEGRAL:
-                    println("INTEGRAL");
-                case .BIG_INTEGRAL:
-                    println("BIG_INTEGRAL");
-                    
-                case .FLOATING:
-                    println("FLOATING");
-                case .BIG_FLOATING:
-                    println("BIG_FLOATING");
-                    
-                case .STRING:
-                    println("STRING");
-                    
-                case .BYTE_ARRAY:
-                    println("BYTE_ARRAY");
-                    
-                case .DATE_TIME:
-                    println("DATE_TIME");
-                    
-                case .COLLECTION:
-                    println("COLLECTION");
-                case .MAP:
-                    println("MAP");
-                    
-                case .ENUM:
-                    println("ENUM");
-                case .CLASS:
-                    println("CLASS");
-                case .BEAN:
-                    println("BEAN");
-                }
-                */
-                
                 if i < 0x10 {
                     XCTAssertEqual(type.toRaw(), UInt8(i))
                 }
@@ -171,17 +128,16 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(encodeDecode(-0x0000000000ffffff, expectedSize: 4) as Int, -0x0000000000ffffff)
         
         XCTAssertEqual(encodeDecode(-0x0000000000010000, expectedSize: 4) as Int, -0x0000000000010000)
-        for i in -0xffff...(-0x100) {
-            XCTAssertEqual(encodeDecode(i, expectedSize: 3) as Int, i)
-        }
-        
+        XCTAssertEqual(encodeDecode(-0x000000000000ffff, expectedSize: 3) as Int, -0x000000000000ffff)
+
+
+        XCTAssertEqual(encodeDecode(-0x0000000000000100, expectedSize: 3) as Int, -0x0000000000000100)
         for i in -0xff...0xff {
             XCTAssertEqual(encodeDecode(i, expectedSize: 2) as Int, i)
         }
-        
-        for i in 0x100...0xffff {
-            XCTAssertEqual(encodeDecode(i, expectedSize: 3) as Int, i)
-        }
+        XCTAssertEqual(encodeDecode(0x0000000000000100, expectedSize: 3) as Int, 0x0000000000000100)
+
+        XCTAssertEqual(encodeDecode(0x000000000000ffff, expectedSize: 3) as Int, 0x000000000000ffff)
         XCTAssertEqual(encodeDecode(0x0000000000010000, expectedSize: 4) as Int, 0x0000000000010000)
         
         XCTAssertEqual(encodeDecode(0x0000000000ffffff, expectedSize: 4) as Int, 0x0000000000ffffff)
@@ -390,20 +346,21 @@ class SpearalIOSTests: XCTestCase {
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1) -> Any? {
         let out = InMemorySpearalOutput()
-        let encoder:SpearalEncoder = SpearalEncoderImpl(output: out)
+        
+        let encoder:SpearalEncoder = DefaultSpearalFactory().newEncoder(out)
         encoder.writeAny(any)
         
         if expectedSize != -1 {
             XCTAssertEqual(out.data.length, expectedSize)
         }
         
-        let decoder:SpearalDecoder = SpearalDecoderImpl(input: InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = DefaultSpearalFactory().newDecoder(InMemorySpearalInput(data: out.data))
         return decoder.readAny()
     }
     
     private func encodeDecode(any1:Any?, any2:Any?, expectedSize:Int = -1) -> (Any?, Any?) {
         let out = InMemorySpearalOutput()
-        let encoder:SpearalEncoder = SpearalEncoderImpl(output: out)
+        let encoder:SpearalEncoder = DefaultSpearalFactory().newEncoder(out)
         encoder.writeAny(any1)
         encoder.writeAny(any2)
         
@@ -411,7 +368,7 @@ class SpearalIOSTests: XCTestCase {
             XCTAssertEqual(out.data.length, expectedSize)
         }
         
-        let decoder:SpearalDecoder = SpearalDecoderImpl(input: InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = DefaultSpearalFactory().newDecoder(InMemorySpearalInput(data: out.data))
         return (decoder.readAny(), decoder.readAny())
     }
 }

@@ -22,6 +22,7 @@ import Foundation
 
 class SpearalDecoderImpl: SpearalDecoder {
     
+    let context:SpearalContext
     let input: SpearalInput
 
     private var sharedStrings:[String]
@@ -29,7 +30,8 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     private let calendar:NSCalendar
     
-    required init(input: SpearalInput) {
+    required init(context:SpearalContext, input: SpearalInput) {
+        self.context = context
         self.input = input
 
         self.sharedStrings = [String]()
@@ -77,7 +79,7 @@ class SpearalDecoderImpl: SpearalDecoder {
             case .ENUM:
                 println("ENUM")
             case .CLASS:
-                println("CLASS")
+                return readClass(parameterizedType)
             case .BEAN:
                 println("BEAN")
             }
@@ -161,20 +163,7 @@ class SpearalDecoderImpl: SpearalDecoder {
     }
     
     func readString(parameterizedType:UInt8) -> String {
-        let indexOrLength = readIndexOrLength(parameterizedType)
-        
-        if SpearalDecoderImpl.isStringReference(parameterizedType) {
-            return sharedStrings[indexOrLength]
-        }
-        
-        if indexOrLength == 0 {
-            return ""
-        }
-        
-        let utf8:[UInt8] = input.read(indexOrLength)
-        let value = NSString(bytes: utf8, length: utf8.count, encoding: NSUTF8StringEncoding) as String
-        sharedStrings.append(value)
-        return value
+        return readStringData(parameterizedType)
     }
     
     func readByteArray(parameterizedType:UInt8) -> [UInt8] {
@@ -223,6 +212,31 @@ class SpearalDecoderImpl: SpearalDecoder {
         }
         
         return calendar.dateFromComponents(components)!
+    }
+    
+    func readClass(parameterizedType:UInt8) -> AnyClass? {
+        let name = readStringData(parameterizedType)
+        return context.introspector.classForName(name)
+    }
+    
+    private func readStringData(parameterizedType:UInt8) -> String {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        return readStringData(parameterizedType, indexOrLength: indexOrLength)
+    }
+
+    private func readStringData(parameterizedType:UInt8, indexOrLength:Int) -> String {
+        if SpearalDecoderImpl.isStringReference(parameterizedType) {
+            return sharedStrings[indexOrLength]
+        }
+        
+        if indexOrLength == 0 {
+            return ""
+        }
+        
+        let utf8:[UInt8] = input.read(indexOrLength)
+        let value = NSString(bytes: utf8, length: utf8.count, encoding: NSUTF8StringEncoding) as String
+        sharedStrings.append(value)
+        return value
     }
     
     private func doubleToUInt8MutablePointer(pointer:UnsafeMutablePointer<Double>) -> UnsafeMutablePointer<UInt8> {

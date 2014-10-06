@@ -30,7 +30,20 @@ protocol SpearalOutput {
 
 protocol SpearalEncoder {
     
-    init(output:SpearalOutput)
+    init(context:SpearalContext, output:SpearalOutput)
     
     func writeAny(any:Any?)
+}
+
+protocol SpearalExtendedEncoder: SpearalEncoder {
+    
+    func writeBool(value:Bool)
+    func writeInt(value:Int)
+    func writeDouble(value:Double)
+    func writeString(value:String)
+    func writeUInt8Array(value:[UInt8])
+    func writeNSData(value:NSData)
+    func writeNSDate(value:NSDate)
+    func writeAnyClass(value:AnyClass)
+    func writeNSObject(value:NSObject)
 }

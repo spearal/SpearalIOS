@@ -44,8 +44,9 @@ private class IdentityIndexMap {
         return -1;
     }
 }
-class SpearalEncoderImpl : SpearalEncoder {
+class SpearalEncoderImpl : SpearalExtendedEncoder {
     
+    let context:SpearalContext
     let output:SpearalOutput
 
     private let sharedStrings:StringIndexMap
@@ -53,7 +54,8 @@ class SpearalEncoderImpl : SpearalEncoder {
     
     private let calendar:NSCalendar
     
-    required init(output: SpearalOutput) {
+    required init(context:SpearalContext, output: SpearalOutput) {
+        self.context = context
         self.output = output
         
         self.sharedStrings = StringIndexMap()
@@ -63,25 +65,11 @@ class SpearalEncoderImpl : SpearalEncoder {
     }
     
     func writeAny(any:Any?) {
-        switch any {
-        case nil:
+        if any == nil {
             writeNil()
-        case let value as Bool:
-            writeBool(value)
-        case let value as Int:
-            writeInt(value)
-        case let value as Double:
-            writeDouble(value)
-        case let value as String:
-            writeString(value)
-        case let value as [UInt8]:
-            writeByteArray(value)
-        case let value as NSData:
-            writeNSData(value)
-        case let value as NSDate:
-            writeNSDate(value)
-        default:
-            println("???: \(reflect(any).valueType) / \(_stdlib_getTypeName(any!))")
+        }
+        else if let coder = context.coderFor(any!) {
+            coder(encoder: self, value: any!)
         }
     }
     
@@ -178,7 +166,7 @@ class SpearalEncoderImpl : SpearalEncoder {
         writeStringData(SpearalType.STRING, value: value)
     }
     
-    func writeByteArray(value:[UInt8]) {
+    func writeUInt8Array(value:[UInt8]) {
         if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
             writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: value.count)
             output.write(value)
@@ -242,6 +230,18 @@ class SpearalEncoderImpl : SpearalEncoder {
             output.write(UInt8(components.minute))
             output.write(UInt8(components.second))
             writeUnsignedInt32Value(nanoseconds, length0: length0);
+        }
+    }
+    
+    func writeAnyClass(value:AnyClass) {
+        let name = context.introspector.classNameOf(value)
+        writeStringData(SpearalType.CLASS, value: name)
+    }
+    
+    func writeNSObject(value:NSObject) {
+        if !putAndWriteObjectReference(SpearalType.BEAN, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
+            let clsInfo = context.introspector.introspect(value.dynamicType)
+            clsInfo.name
         }
     }
     

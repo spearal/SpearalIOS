@@ -30,7 +30,7 @@ protocol SpearalInput {
 
 protocol SpearalDecoder {
     
-    init(input:SpearalInput)
+    init(context:SpearalContext, input:SpearalInput)
     
     func readAny() -> Any?
 }
