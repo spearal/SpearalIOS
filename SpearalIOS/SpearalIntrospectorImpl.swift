@@ -115,8 +115,7 @@ class SpearalIntrospectorImpl: SpearalIntrospector {
         
         for var i:Int = 0; i < Int(count); i++ {
             let property = list[i]
-            let attributes = String.fromCString(property_getAttributes(property))!
-            if !contains(attributes.componentsSeparatedByString(","), "R") {
+            if property_copyAttributeValue(property, "R") == nil {
                 propertyNames.append(String.fromCString(property_getName(property))!)
             }
         }
