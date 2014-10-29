@@ -21,16 +21,14 @@
 import Foundation
 
 
-protocol SpearalInput {
+public protocol SpearalInput {
     
     func read() -> UInt8
     func read(count:Int) -> [UInt8]
 }
 
 
-protocol SpearalDecoder {
-    
-    init(context:SpearalContext, input:SpearalInput)
+public protocol SpearalDecoder {
     
     func readAny() -> Any?
 }

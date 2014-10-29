@@ -26,7 +26,7 @@ class SpearalDecoderImpl: SpearalDecoder {
     let input: SpearalInput
 
     private var sharedStrings:[String]
-    private var sharedObjects:[UnsafePointer<Void>]
+    private var sharedObjects:[Any]
     
     private let calendar:NSCalendar
     
@@ -35,9 +35,9 @@ class SpearalDecoderImpl: SpearalDecoder {
         self.input = input
 
         self.sharedStrings = [String]()
-        self.sharedObjects = [UnsafePointer<Void>]()
+        self.sharedObjects = [Any]()
         
-        self.calendar = NSCalendar(identifier: NSGregorianCalendar)
+        self.calendar = NSCalendar(identifier: NSGregorianCalendar)!
     }
     
     func readAny() -> Any? {
@@ -81,7 +81,7 @@ class SpearalDecoderImpl: SpearalDecoder {
             case .CLASS:
                 return readClass(parameterizedType)
             case .BEAN:
-                println("BEAN")
+                return readBean(parameterizedType)
             }
         }
 
@@ -170,11 +170,11 @@ class SpearalDecoderImpl: SpearalDecoder {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
-            return unsafeBitCast(sharedObjects[indexOrLength], [UInt8].self)
+            return sharedObjects[indexOrLength] as [UInt8]
         }
         
         let value:[UInt8] = input.read(indexOrLength)
-        sharedObjects.append(unsafeBitCast(value, UnsafePointer<Void>.self))
+        sharedObjects.append(value)
         return value
     }
     
@@ -216,7 +216,60 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     func readClass(parameterizedType:UInt8) -> AnyClass? {
         let name = readStringData(parameterizedType)
-        return context.introspector.classForName(name)
+        return context.getIntrospector()!.classForName(name)
+    }
+    
+    func readBean(parameterizedType:UInt8) -> Any {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            return sharedObjects[indexOrLength]
+        }
+        
+        let description = readStringData(parameterizedType, indexOrLength: indexOrLength)
+        let (className, propertyNames) = parseDescription(description)
+
+        let cls = NSClassFromString(className) as NSObject.Type
+        var instance = cls()
+        
+        sharedObjects.append(instance as NSObject as Any)
+        
+        let info = context.getIntrospector()!.introspect(cls)
+        let properties = info.properties
+        for propertyName in propertyNames {
+            if contains(properties, propertyName) {
+                let value:AnyObject? = readAny() as NSObject? as AnyObject?
+                instance.setValue(value, forKey: propertyName)
+            }
+        }
+        return instance
+    }
+    
+    private func parseDescription(description:String) -> (String, [String]) {
+        let aliasStrategy = self.context.getAliasStrategy()
+        
+        let classNamePropertyNames = description.componentsSeparatedByString("#")
+        
+        let remoteClassName = classNamePropertyNames[0]
+        let localClassName = aliasStrategy?.remoteToLocalClassName(remoteClassName) ?? remoteClassName
+        
+        if classNamePropertyNames.count == 1 || classNamePropertyNames[1].isEmpty {
+            return (localClassName, [])
+        }
+        
+        var propertyNames = classNamePropertyNames[1].componentsSeparatedByString(",").filter({
+            (elt: String) -> Bool in return !elt.isEmpty
+        })
+        
+        if aliasStrategy != nil {
+            let aliases = aliasStrategy!.remoteToLocalProperties(localClassName)
+            
+            for var i = 0; i < propertyNames.count; i++ {
+                propertyNames[i] = aliases[propertyNames[i]] ?? propertyNames[i]
+            }
+        }
+        
+        return (localClassName, propertyNames)
     }
     
     private func readStringData(parameterizedType:UInt8) -> String {

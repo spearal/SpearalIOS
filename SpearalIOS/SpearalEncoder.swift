@@ -20,7 +20,7 @@
 
 import Foundation
 
-protocol SpearalOutput {
+public protocol SpearalOutput {
     
     func write(byte:UInt8)
     func write(byte:UInt64)
@@ -28,14 +28,12 @@ protocol SpearalOutput {
     func write(bytes:[UInt8])
 }
 
-protocol SpearalEncoder {
-    
-    init(context:SpearalContext, output:SpearalOutput)
+public protocol SpearalEncoder {
     
     func writeAny(any:Any?)
 }
 
-protocol SpearalExtendedEncoder: SpearalEncoder {
+public protocol SpearalExtendedEncoder: SpearalEncoder {
     
     func writeBool(value:Bool)
     func writeInt(value:Int)

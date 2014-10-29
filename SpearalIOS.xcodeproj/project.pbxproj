@@ -7,7 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DFEA071F19B375390066DD5F /* SpearalIOS.h in Headers */ = {isa = PBXBuildFile; fileRef = DFEA071E19B375390066DD5F /* SpearalIOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DF1B970719EFEF0400A37177 /* SpearalPartialable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF1B970619EFEF0400A37177 /* SpearalPartialable.swift */; };
+		DF1B970819EFEF0400A37177 /* SpearalPartialable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF1B970619EFEF0400A37177 /* SpearalPartialable.swift */; };
+		DF1B974019F0079400A37177 /* SpearalIOS.h in Headers */ = {isa = PBXBuildFile; fileRef = DFEA071E19B375390066DD5F /* SpearalIOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DF54107219E5443D00301490 /* SpearalIOSTestsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF54107019E5443D00301490 /* SpearalIOSTestsModel.swift */; };
+		DFA46B9819E3E916005FCB46 /* SpearalPropertyFilterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA46B9719E3E916005FCB46 /* SpearalPropertyFilterImpl.swift */; };
+		DFA46B9919E3E916005FCB46 /* SpearalPropertyFilterImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA46B9719E3E916005FCB46 /* SpearalPropertyFilterImpl.swift */; };
+		DFE5111D19DEA316005E09B3 /* SpearalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5111C19DEA316005E09B3 /* SpearalContext.swift */; };
+		DFE5111E19DEA316005E09B3 /* SpearalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5111C19DEA316005E09B3 /* SpearalContext.swift */; };
+		DFE5112019DEA7E7005E09B3 /* SpearalFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5111F19DEA7E7005E09B3 /* SpearalFactory.swift */; };
+		DFE5112119DEA7E7005E09B3 /* SpearalFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5111F19DEA7E7005E09B3 /* SpearalFactory.swift */; };
+		DFE5112319DEA9F2005E09B3 /* SpearalContextImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5112219DEA9F2005E09B3 /* SpearalContextImpl.swift */; };
+		DFE5112419DEA9F2005E09B3 /* SpearalContextImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5112219DEA9F2005E09B3 /* SpearalContextImpl.swift */; };
+		DFE5112619DEBCE3005E09B3 /* SpearalCoderProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5112519DEBCE3005E09B3 /* SpearalCoderProviders.swift */; };
+		DFE5112719DEBCE3005E09B3 /* SpearalCoderProviders.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5112519DEBCE3005E09B3 /* SpearalCoderProviders.swift */; };
+		DFE5112919DEF081005E09B3 /* SpearalIntrospectorImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5112819DEF081005E09B3 /* SpearalIntrospectorImpl.swift */; };
+		DFE5112A19DEF081005E09B3 /* SpearalIntrospectorImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE5112819DEF081005E09B3 /* SpearalIntrospectorImpl.swift */; };
 		DFEA072919B375390066DD5F /* SpearalIOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA072819B375390066DD5F /* SpearalIOSTests.swift */; };
 		DFEA073719B377190066DD5F /* SpearalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073619B377190066DD5F /* SpearalType.swift */; };
 		DFEA073819B377190066DD5F /* SpearalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFEA073619B377190066DD5F /* SpearalType.swift */; };
@@ -24,6 +39,14 @@
 /* Begin PBXFileReference section */
 		DF04954119B70FE500744988 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		DF04954219B7101700744988 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DF1B970619EFEF0400A37177 /* SpearalPartialable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalPartialable.swift; sourceTree = "<group>"; };
+		DF54107019E5443D00301490 /* SpearalIOSTestsModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalIOSTestsModel.swift; sourceTree = "<group>"; };
+		DFA46B9719E3E916005FCB46 /* SpearalPropertyFilterImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalPropertyFilterImpl.swift; sourceTree = "<group>"; };
+		DFE5111C19DEA316005E09B3 /* SpearalContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalContext.swift; sourceTree = "<group>"; };
+		DFE5111F19DEA7E7005E09B3 /* SpearalFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalFactory.swift; sourceTree = "<group>"; };
+		DFE5112219DEA9F2005E09B3 /* SpearalContextImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalContextImpl.swift; sourceTree = "<group>"; };
+		DFE5112519DEBCE3005E09B3 /* SpearalCoderProviders.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalCoderProviders.swift; sourceTree = "<group>"; };
+		DFE5112819DEF081005E09B3 /* SpearalIntrospectorImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpearalIntrospectorImpl.swift; sourceTree = "<group>"; };
 		DFEA071919B375390066DD5F /* SpearalIOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpearalIOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DFEA071D19B375390066DD5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DFEA071E19B375390066DD5F /* SpearalIOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpearalIOS.h; sourceTree = "<group>"; };
@@ -78,8 +101,11 @@
 		DFEA071B19B375390066DD5F /* SpearalIOS */ = {
 			isa = PBXGroup;
 			children = (
+				DFE5111C19DEA316005E09B3 /* SpearalContext.swift */,
 				DFEA073919B377600066DD5F /* SpearalEncoder.swift */,
 				DFEA073F19B46FD10066DD5F /* SpearalDecoder.swift */,
+				DFE5111F19DEA7E7005E09B3 /* SpearalFactory.swift */,
+				DF1B970619EFEF0400A37177 /* SpearalPartialable.swift */,
 				DFEA073519B3759D0066DD5F /* Impl */,
 				DFEA071E19B375390066DD5F /* SpearalIOS.h */,
 				DFEA071C19B375390066DD5F /* Supporting Files */,
@@ -99,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				DFEA072819B375390066DD5F /* SpearalIOSTests.swift */,
+				DF54107019E5443D00301490 /* SpearalIOSTestsModel.swift */,
 				DFEA072619B375390066DD5F /* Supporting Files */,
 			);
 			path = SpearalIOSTests;
@@ -116,8 +143,12 @@
 			isa = PBXGroup;
 			children = (
 				DFEA073619B377190066DD5F /* SpearalType.swift */,
+				DFE5112219DEA9F2005E09B3 /* SpearalContextImpl.swift */,
 				DFEA073C19B379500066DD5F /* SpearalEncoderImpl.swift */,
 				DFEA074219B47F4B0066DD5F /* SpearalDecoderImpl.swift */,
+				DFE5112819DEF081005E09B3 /* SpearalIntrospectorImpl.swift */,
+				DFA46B9719E3E916005FCB46 /* SpearalPropertyFilterImpl.swift */,
+				DFE5112519DEBCE3005E09B3 /* SpearalCoderProviders.swift */,
 			);
 			name = Impl;
 			sourceTree = "<group>";
@@ -129,7 +160,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFEA071F19B375390066DD5F /* SpearalIOS.h in Headers */,
+				DF1B974019F0079400A37177 /* SpearalIOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,7 +208,7 @@
 		DFEA071019B375390066DD5F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = Spearal;
 				TargetAttributes = {
 					DFEA071819B375390066DD5F = {
@@ -228,11 +259,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFEA074319B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */,
-				DFEA073719B377190066DD5F /* SpearalType.swift in Sources */,
-				DFEA074019B46FD10066DD5F /* SpearalDecoder.swift in Sources */,
-				DFEA073D19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */,
+				DFE5111D19DEA316005E09B3 /* SpearalContext.swift in Sources */,
 				DFEA073A19B377600066DD5F /* SpearalEncoder.swift in Sources */,
+				DFEA074019B46FD10066DD5F /* SpearalDecoder.swift in Sources */,
+				DFE5112019DEA7E7005E09B3 /* SpearalFactory.swift in Sources */,
+				DF1B970719EFEF0400A37177 /* SpearalPartialable.swift in Sources */,
+				DFEA073719B377190066DD5F /* SpearalType.swift in Sources */,
+				DFE5112319DEA9F2005E09B3 /* SpearalContextImpl.swift in Sources */,
+				DFEA073D19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */,
+				DFEA074319B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */,
+				DFE5112919DEF081005E09B3 /* SpearalIntrospectorImpl.swift in Sources */,
+				DFA46B9819E3E916005FCB46 /* SpearalPropertyFilterImpl.swift in Sources */,
+				DFE5112619DEBCE3005E09B3 /* SpearalCoderProviders.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,11 +279,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				DFEA073B19B377600066DD5F /* SpearalEncoder.swift in Sources */,
+				DFE5111E19DEA316005E09B3 /* SpearalContext.swift in Sources */,
 				DFEA073E19B379500066DD5F /* SpearalEncoderImpl.swift in Sources */,
+				DFE5112119DEA7E7005E09B3 /* SpearalFactory.swift in Sources */,
+				DFE5112419DEA9F2005E09B3 /* SpearalContextImpl.swift in Sources */,
 				DFEA074119B46FD10066DD5F /* SpearalDecoder.swift in Sources */,
+				DFA46B9919E3E916005FCB46 /* SpearalPropertyFilterImpl.swift in Sources */,
+				DF54107219E5443D00301490 /* SpearalIOSTestsModel.swift in Sources */,
+				DF1B970819EFEF0400A37177 /* SpearalPartialable.swift in Sources */,
 				DFEA073819B377190066DD5F /* SpearalType.swift in Sources */,
 				DFEA072919B375390066DD5F /* SpearalIOSTests.swift in Sources */,
 				DFEA074419B47F4B0066DD5F /* SpearalDecoderImpl.swift in Sources */,
+				DFE5112719DEBCE3005E09B3 /* SpearalCoderProviders.swift in Sources */,
+				DFE5112A19DEF081005E09B3 /* SpearalIntrospectorImpl.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -351,6 +397,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -367,6 +414,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Release;
 		};

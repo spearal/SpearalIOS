@@ -20,7 +20,7 @@
 
 import Foundation
 
-protocol SpearalFactory {
+public protocol SpearalFactory {
     
     var context:SpearalContext { get }
     
@@ -30,23 +30,118 @@ protocol SpearalFactory {
     func newDecoder(input:SpearalInput) -> SpearalDecoder
 }
 
-class DefaultSpearalFactory: SpearalFactory {
+public class DefaultSpearalFactory: SpearalFactory {
     
-    let context:SpearalContext
+    public let context:SpearalContext
     
-    init() {
+    public init() {
         self.context = SpearalContextImpl()
-        context.configure(SpearalIntrospectorImpl())
-        context.configure(SpearalStandardCoderProvider(), append: false)
+        
+        context
+            .configure(SpearalIntrospectorImpl())
+            .configure(SpearalStandardCoderProvider(), append: false)
     }
     
-    func newEncoder(output:SpearalOutput) -> SpearalEncoder {
+    public func newEncoder(output:SpearalOutput) -> SpearalEncoder {
         return SpearalEncoderImpl(context: context, output: output)
     }
 
     // func newEncoder(output:SpearalOutput, filter:SpearalPropertyFilter) -> SpearalEncoder
     
-    func newDecoder(input:SpearalInput) -> SpearalDecoder {
+    public func newDecoder(input:SpearalInput) -> SpearalDecoder {
         return SpearalDecoderImpl(context: context, input: input)
+    }
+}
+
+public class BasicSpearalAliasStrategy: SpearalAliasStrategy {
+    
+    private var localToRemoteClassNames:[String: String]
+    private var remoteToLocalClassNames:[String: String]
+    
+    private let localToRemoteAliaser:SpearalClassNameAliaser
+    private let remoteToLocalAliaser:SpearalClassNameAliaser
+    
+    private var localToRemoteProperties:[String: [String: String]]
+    private var remoteToLocalProperties:[String: [String: String]]
+    
+    public convenience required init(localToRemoteClassNames:[String: String]) {
+        self.init(
+            localToRemoteClassNames,
+            { (localClassName:String) -> String in return localClassName },
+            { (remoteClassName:String) -> String in return remoteClassName }
+        )
+    }
+    
+    public convenience required init(
+        localToRemoteAliaser:SpearalClassNameAliaser,
+        remoteToLocalAliaser:SpearalClassNameAliaser) {
+
+        self.init([String: String](), localToRemoteAliaser, remoteToLocalAliaser)
+    }
+    
+    private init(
+        _ localToRemoteClassNames:[String: String],
+        localToRemoteAliaser:SpearalClassNameAliaser,
+        remoteToLocalAliaser:SpearalClassNameAliaser) {
+        
+        self.localToRemoteClassNames = localToRemoteClassNames
+        self.remoteToLocalClassNames = BasicSpearalAliasStrategy.reverseMap(localToRemoteClassNames)
+        
+        self.localToRemoteAliaser = localToRemoteAliaser
+        self.remoteToLocalAliaser = remoteToLocalAliaser
+        
+        self.localToRemoteProperties = [String: [String: String]]()
+        self.remoteToLocalProperties = [String: [String: String]]()
+    }
+    
+    public func setPropertiesAlias(localClassName:String, localToRemoteProperties:[String: String]) {
+        self.localToRemoteProperties[localClassName] = localToRemoteProperties
+        self.remoteToLocalProperties[localClassName] = BasicSpearalAliasStrategy.reverseMap(localToRemoteProperties)
+    }
+    
+    public func localToRemoteClassName(localClassName:String) -> String {
+        if let remoteClassName = localToRemoteClassNames[localClassName] {
+            return remoteClassName
+        }
+        let remoteClassName = localToRemoteAliaser(localClassName)
+        localToRemoteClassNames[localClassName] = remoteClassName
+        return remoteClassName
+    }
+    
+    public func remoteToLocalClassName(remoteClassName:String) -> String {
+        if let localClassName = remoteToLocalClassNames[remoteClassName] {
+            return localClassName
+        }
+        let localClassName = localToRemoteAliaser(remoteClassName)
+        remoteToLocalClassNames[remoteClassName] = localClassName
+        return localClassName
+    }
+    
+    public func localToRemoteProperties(localClassName:String) -> [String: String] {
+        if let properties = localToRemoteProperties[localClassName] {
+            return properties
+        }
+        if let properties = localToRemoteProperties["*"] {
+            return properties
+        }
+        return [String: String]()
+    }
+    
+    public func remoteToLocalProperties(localClassName:String) -> [String: String] {
+        if let properties = remoteToLocalProperties[localClassName] {
+            return properties
+        }
+        if let properties = remoteToLocalProperties["*"] {
+            return properties
+        }
+        return [String: String]()
+    }
+    
+    private class func reverseMap(map:[String: String]) -> [String: String] {
+        var reversed = [String: String]()
+        for (key, value) in map {
+            reversed[value] = key
+        }
+        return reversed
     }
 }

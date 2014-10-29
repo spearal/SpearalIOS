@@ -82,18 +82,18 @@ class SpearalIOSTests: XCTestCase {
         for i in 0x00...0xff {
             if let type = SpearalType.valueOf(UInt8(i)) {
                 if i < 0x10 {
-                    XCTAssertEqual(type.toRaw(), UInt8(i))
+                    XCTAssertEqual(type.rawValue, UInt8(i))
                 }
                 else {
-                    XCTAssertEqual(type.toRaw(), UInt8(i & 0xf0))
+                    XCTAssertEqual(type.rawValue, UInt8(i & 0xf0))
                 }
             }
             else {
                 if i < 0x10 {
-                    XCTAssertTrue(SpearalType.fromRaw(UInt8(i)) == nil)
+                    XCTAssertTrue(SpearalType(rawValue: UInt8(i)) == nil)
                 }
                 else {
-                    XCTAssertTrue(SpearalType.fromRaw(UInt8(i & 0xf0)) == nil)
+                    XCTAssertTrue(SpearalType(rawValue: UInt8(i & 0xf0)) == nil)
                 }
             }
         }
@@ -287,12 +287,6 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(sc1 as String, s1)
         XCTAssertEqual(sc2 as String, s2)
         XCTAssertTrue(sc1 as NSString === sc2 as NSString)
-        
-        XCTAssertTrue(s1 as NSString === s1 as NSString)
-        (sc1, sc2) = encodeDecode(s1, any2: s1)
-        XCTAssertEqual(sc1 as String, s1)
-        XCTAssertEqual(sc2 as String, s1)
-        XCTAssertTrue(sc1 as NSString === sc2 as NSString)
     }
     
     func testByteArray() {
@@ -344,17 +338,66 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(encodeDecode(date) as NSDate, date)
     }
     
-    private func encodeDecode(any:Any?, expectedSize:Int = -1) -> Any? {
-        let out = InMemorySpearalOutput()
+    func testBean() {
+        let aliasStrategy = BasicSpearalAliasStrategy(localToRemoteClassNames: [
+            "Person": "com.cortez.samples.javaee7angular.data.Person"
+        ])
+        aliasStrategy.setPropertiesAlias("Person", localToRemoteProperties: [
+            "description_" : "description"
+        ])
         
-        let encoder:SpearalEncoder = DefaultSpearalFactory().newEncoder(out)
+        var person = Person()
+        
+        XCTAssertFalse(person._$isDefined("firstName"))
+        XCTAssertFalse(person._$isDefined("lastName"))
+        XCTAssertFalse(person._$isDefined("description_"))
+        XCTAssertFalse(person._$isDefined("age"))
+        
+        var personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy) as Person
+        
+        XCTAssertFalse(personCopy._$isDefined("firstName"))
+        XCTAssertFalse(personCopy._$isDefined("lastName"))
+        XCTAssertFalse(personCopy._$isDefined("description_"))
+        XCTAssertFalse(personCopy._$isDefined("age"))
+
+        person = Person(firstName: "John", lastName: "Doo", description: "Good fellow", age: 12)
+
+        XCTAssertTrue(person._$isDefined("firstName"))
+        XCTAssertTrue(person._$isDefined("lastName"))
+        XCTAssertTrue(person._$isDefined("description_"))
+        XCTAssertTrue(person._$isDefined("age"))
+        
+        personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy) as Person
+
+        XCTAssertTrue(personCopy._$isDefined("firstName"))
+        XCTAssertTrue(personCopy._$isDefined("lastName"))
+        XCTAssertTrue(personCopy._$isDefined("description_"))
+        XCTAssertTrue(personCopy._$isDefined("age"))
+        
+        XCTAssertEqual(personCopy.firstName!, person.firstName!)
+        XCTAssertEqual(personCopy.firstName!, person.firstName!)
+        XCTAssertEqual(personCopy.description_!, personCopy.description_!)
+        XCTAssertEqual(personCopy.firstName!, person.firstName!)
+    }
+    
+    private func encodeDecode(any:Any?, expectedSize:Int = -1, aliasStrategy:SpearalAliasStrategy? = nil) -> Any? {
+        let out = InMemorySpearalOutput()
+        let encoderFactory = DefaultSpearalFactory()
+        if aliasStrategy != nil {
+            encoderFactory.context.configure(aliasStrategy!)
+        }
+        let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(any)
         
         if expectedSize != -1 {
             XCTAssertEqual(out.data.length, expectedSize)
         }
         
-        let decoder:SpearalDecoder = DefaultSpearalFactory().newDecoder(InMemorySpearalInput(data: out.data))
+        let decoderFactory = DefaultSpearalFactory()
+        if aliasStrategy != nil {
+            decoderFactory.context.configure(aliasStrategy!)
+        }
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
         return decoder.readAny()
     }
     

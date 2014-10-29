@@ -22,43 +22,55 @@ import Foundation
 
 class SpearalContextImpl: SpearalContext {
     
-    private var _introspector:SpearalIntrospector?
+    private var introspector:SpearalIntrospector?
+    private var aliasStrategy:SpearalAliasStrategy?
     
     private var coderProviders:[SpearalCoderProvider]
-    private var coderProvidersCache:[String: SpearalCoder]
+    private var codersCache:[String: SpearalCoder]
     
     init() {
         self.coderProviders = [SpearalCoderProvider]()
-        self.coderProvidersCache = [String: SpearalCoder]()
+        self.codersCache = [String: SpearalCoder]()
     }
     
-    var introspector:SpearalIntrospector {
-        return _introspector!
+    func configure(introspector:SpearalIntrospector) -> SpearalContext {
+        self.introspector = introspector
+        return self
     }
     
-    func configure(coderProvider:SpearalCoderProvider, append:Bool) {
+    func configure(coderProvider:SpearalCoderProvider, append:Bool) -> SpearalContext {
         if append {
             coderProviders.append(coderProvider)
         }
         else {
             coderProviders.insert(coderProvider, atIndex: 0)
         }
+        return self
     }
     
-    func configure(introspector:SpearalIntrospector) {
-        self._introspector = introspector
+    func configure(aliasStrategy:SpearalAliasStrategy) -> SpearalContext {
+        self.aliasStrategy = aliasStrategy
+        return self
     }
     
-    func coderFor(any:Any) -> SpearalCoder? {
-        let key:String = _introspector!.classNameOf(any)!
+    func getIntrospector() -> SpearalIntrospector? {
+        return self.introspector
+    }
+    
+    func getAliasStrategy() -> SpearalAliasStrategy? {
+        return self.aliasStrategy
+    }
+    
+    func getCoderFor(any:Any) -> SpearalCoder? {
+        let key:String = introspector!.classNameOfAny(any)!
         
-        if let coder = coderProvidersCache[key] {
+        if let coder = codersCache[key] {
             return coder
         }
         
         for provider in coderProviders {
             if let coder = provider.coder(any) {
-                coderProvidersCache[key] = coder
+                codersCache[key] = coder
                 return coder
             }
         }

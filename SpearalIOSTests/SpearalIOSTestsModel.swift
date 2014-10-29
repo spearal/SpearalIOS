@@ -20,37 +20,26 @@
 
 import Foundation
 
-enum SpearalType: UInt8 {
+@objc(Person)
+public class Person: SpearalSelfObserver {
     
-    // No parameters (0x00...0x0f).
+    dynamic var firstName:String?
+    dynamic var lastName:String?
+    dynamic var description_:String?
+    dynamic var age:NSNumber?
     
-    case NULL = 0x00
-    
-    case TRUE = 0x01
-    case FALSE = 0x02
-    
-    // 4 bits of parameters (0x10...0xf0).
-    
-    case INTEGRAL = 0x10
-    case BIG_INTEGRAL = 0x20
-    
-    case FLOATING = 0x30
-    case BIG_FLOATING = 0x40
-    
-    case STRING = 0x50
-    
-    case BYTE_ARRAY = 0x60
-    
-    case DATE_TIME = 0x70
-    
-    case COLLECTION = 0x80
-    case MAP = 0x90
-    
-    case ENUM = 0xa0
-    case CLASS = 0xb0
-    case BEAN = 0xc0
-    
-    static func valueOf(parameterizedType:UInt8) -> SpearalType? {
-        return SpearalType(rawValue: parameterizedType < 0x10 ? parameterizedType : parameterizedType & UInt8(0xf0))
+    required public init() {
+        super.init()
     }
+
+    public init(firstName:String, lastName:String, description:String, age: NSNumber) {
+        super.init()
+        
+        this.firstName = firstName
+        this.lastName = lastName
+        this.description_ = description
+        this.age = age
+    }
+    
+    private lazy var this:Person = (self as Person)
 }

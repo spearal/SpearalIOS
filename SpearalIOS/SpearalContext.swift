@@ -20,51 +20,69 @@
 
 import Foundation
 
-protocol SpearalConfigurable {
+public protocol SpearalConfigurable {
 }
 
-protocol SpearalRepeatable: SpearalConfigurable {
+public protocol SpearalRepeatable: SpearalConfigurable {
 }
 
-typealias SpearalCoder = (encoder:SpearalExtendedEncoder, value:Any) -> Void
-
-protocol SpearalCoderProvider: SpearalRepeatable {
+public protocol SpearalCoder {
+    
+    func encode(encoder:SpearalExtendedEncoder, value:Any)
+}
+public protocol SpearalCoderProvider: SpearalRepeatable {
     
     func coder(any:Any) -> SpearalCoder?
 }
 
-typealias SpearalIntrospectorGetter = (AnyObject) -> AnyObject?
-typealias SpearalIntrospectorSetter = (AnyObject, AnyObject?) -> Void
-
-protocol SpearalIntrospectorProperty {
+public typealias SpearalClassNameAliaser = (String) -> String
+public protocol SpearalAliasStrategy {
     
-    var name:String { get }
-    var get:SpearalIntrospectorGetter { get }
-    var set:SpearalIntrospectorSetter { get }
+    init(localToRemoteClassNames:[String: String])
+    init(localToRemoteAliaser:SpearalClassNameAliaser, remoteToLocalAliaser:SpearalClassNameAliaser)
+    
+    func setPropertiesAlias(localClassName:String, localToRemoteProperties:[String: String])
+
+    func localToRemoteClassName(localClassName:String) -> String
+    func remoteToLocalClassName(remoteClassName:String) -> String
+    
+    func localToRemoteProperties(localClassName:String) -> [String: String]
+    func remoteToLocalProperties(localClassName:String) -> [String: String]
 }
 
-protocol SpearalIntrospectorClass {
+public protocol SpearalIntrospectorClassInfo {
     
-    var cls:AnyClass { get }
-    var name:String { get }
-    var properties:[String: SpearalIntrospectorProperty] { get }
+    var type:AnyClass { get }
+    var supertype:SpearalIntrospectorClassInfo? { get }
+    var properties:[String] { get }
+    var declaredProperties:[String] { get }
 }
 
-protocol SpearalIntrospector: SpearalConfigurable {
+public protocol SpearalIntrospector: SpearalConfigurable {
     
-    func introspect(cls:AnyClass) -> SpearalIntrospectorClass
-    func classNameOf(any:Any) -> String?
-    func classNameOf(cls:AnyClass) -> String
+    func introspect(cls:AnyClass) -> SpearalIntrospectorClassInfo
+    
+    func classNameOfAny(any:Any) -> String?
+    func classNameOfAnyObject(anyObject:AnyObject) -> String?
+    func classNameOfAnyClass(cls:AnyClass) -> String
+    
     func classForName(name:String) -> AnyClass?
     func protocolForName(name:String) -> Protocol?
 }
 
-protocol SpearalContext {
-
-    func configure(coderProvider:SpearalCoderProvider, append:Bool)
-    func configure(introspector:SpearalIntrospector)
-
-    var introspector:SpearalIntrospector { get }
+public protocol SpearalPropertyFilter {
     
-    func coderFor(any:Any) -> SpearalCoder?
+    func add(cls:AnyClass, propertyNames:String...)
+    func get(cls:AnyClass) -> [String]
+}
+
+public protocol SpearalContext {
+
+    func configure(introspector:SpearalIntrospector) -> SpearalContext
+    func configure(aliasStrategy:SpearalAliasStrategy) -> SpearalContext
+    func configure(coderProvider:SpearalCoderProvider, append:Bool) -> SpearalContext
+
+    func getIntrospector() -> SpearalIntrospector?
+    func getAliasStrategy() -> SpearalAliasStrategy?
+    func getCoderFor(any:Any) -> SpearalCoder?
 }

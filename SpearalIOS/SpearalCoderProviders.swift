@@ -22,41 +22,51 @@ import Foundation
 
 class SpearalStandardCoderProvider: SpearalCoderProvider {
     
-    private let stringCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class StringCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeString(value as String)
-    }
+    }}
     
-    private let intCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class IntCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeInt(value as Int)
-    }
+    }}
     
-    private let boolCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class BoolCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeBool(value as Bool)
-    }
+    }}
     
-    private let doubleCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class DoubleCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeDouble(value as Double)
-    }
+    }}
     
-    private let uint8ArrayCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class UInt8ArrayCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeUInt8Array(value as [UInt8])
-    }
+    }}
     
-    private let nsDataCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class NSDataCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeNSData(value as NSData)
-    }
+    }}
     
-    private let nsDateCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class NSDateCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeNSDate(value as NSDate)
-    }
+    }}
     
-    private let anyClassCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class AnyClassCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeAnyClass(value as AnyClass)
-    }
+    }}
     
-    private let nsObjectCoder:SpearalCoder = { (encoder:SpearalExtendedEncoder, value:Any) in
+    class NSObjectCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeNSObject(value as NSObject)
-    }
+    }}
+    
+    private let stringCoder:SpearalCoder = StringCoder()
+    private let intCoder:SpearalCoder = IntCoder()
+    private let boolCoder:SpearalCoder = BoolCoder()
+    private let doubleCoder:SpearalCoder = DoubleCoder()
+    private let uint8ArrayCoder:SpearalCoder = UInt8ArrayCoder()
+    private let nsDataCoder:SpearalCoder = NSDataCoder()
+    private let nsDateCoder:SpearalCoder = NSDateCoder()
+    private let anyClassCoder:SpearalCoder = AnyClassCoder()
+    private let nsObjectCoder:SpearalCoder = NSObjectCoder()
     
     func coder(any:Any) -> SpearalCoder? {
         switch any {
@@ -77,7 +87,7 @@ class SpearalStandardCoderProvider: SpearalCoderProvider {
         case let value as AnyClass:
             return anyClassCoder
         case let value as NSObject:
-            return anyClassCoder
+            return nsObjectCoder
         default:
             return nil
         }

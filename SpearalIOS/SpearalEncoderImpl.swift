@@ -32,6 +32,7 @@ private class StringIndexMap {
         return -1
     }
 }
+
 private class IdentityIndexMap {
     
     private var references:Dictionary<UnsafePointer<Void>, Int> = Dictionary<UnsafePointer<Void>, Int>()
@@ -44,9 +45,11 @@ private class IdentityIndexMap {
         return -1;
     }
 }
+
 class SpearalEncoderImpl : SpearalExtendedEncoder {
     
     let context:SpearalContext
+    let filter:SpearalPropertyFilter
     let output:SpearalOutput
 
     private let sharedStrings:StringIndexMap
@@ -54,37 +57,42 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     
     private let calendar:NSCalendar
     
-    required init(context:SpearalContext, output: SpearalOutput) {
+    convenience init(context:SpearalContext, output: SpearalOutput) {
+        self.init(context: context, filter: SpearalPropertyFilterImpl(context), output: output)
+    }
+    
+    init(context:SpearalContext, filter:SpearalPropertyFilter, output: SpearalOutput) {
         self.context = context
+        self.filter = filter
         self.output = output
         
         self.sharedStrings = StringIndexMap()
         self.sharedObjects = IdentityIndexMap()
         
-        self.calendar = NSCalendar(identifier: NSGregorianCalendar)
+        self.calendar = NSCalendar(identifier: NSGregorianCalendar)!
     }
     
     func writeAny(any:Any?) {
         if any == nil {
             writeNil()
         }
-        else if let coder = context.coderFor(any!) {
-            coder(encoder: self, value: any!)
+        else if let coder = context.getCoderFor(any!) {
+            coder.encode(self, value: any!)
         }
     }
     
     func writeNil() {
-        output.write(SpearalType.NULL.toRaw())
+        output.write(SpearalType.NULL.rawValue)
     }
     
     func writeBool(value:Bool) {
-        output.write((value ? SpearalType.TRUE : SpearalType.FALSE).toRaw())
+        output.write((value ? SpearalType.TRUE : SpearalType.FALSE).rawValue)
     }
     
     func writeInt(var value:Int) {
         
         if value == Int.min {
-            output.write([SpearalType.INTEGRAL.toRaw() | 7, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+            output.write([SpearalType.INTEGRAL.rawValue | 7, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
             return
         }
         
@@ -95,7 +103,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         }
         let length0 = unsignedIntLength0(value)
         
-        output.write(SpearalType.INTEGRAL.toRaw() | inverse | length0)
+        output.write(SpearalType.INTEGRAL.rawValue | inverse | length0)
         
         if length0 >= 7 {
             output.write(value >> 56)
@@ -149,7 +157,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
                                 intValue = -intValue
                             }
                             let length0 = unsignedIntLength0(intValue)
-                            output.write(SpearalType.FLOATING.toRaw() | 0x08 | inverse | length0)
+                            output.write(SpearalType.FLOATING.rawValue | 0x08 | inverse | length0)
                             writeUnsignedInt32Value(intValue, length0: length0)
                             return
                         }
@@ -158,7 +166,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
             }
         }
         
-        output.write(SpearalType.FLOATING.toRaw())
+        output.write(SpearalType.FLOATING.rawValue)
         writeUInt64(unsafeBitCast(value, UInt64.self))
     }
     
@@ -167,17 +175,17 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     func writeUInt8Array(value:[UInt8]) {
-        if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
-            writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: value.count)
+        if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, id: unsafeBitCast(value, UnsafePointer<Void>.self)) {
+            writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.rawValue, value: value.count)
             output.write(value)
         }
     }
     
     func writeNSData(value:NSData) {
-        if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
+        if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, id: unsafeAddressOf(value)) {
             var bytes = [UInt8](count: value.length, repeatedValue: 0)
             value.getBytes(&bytes, length: value.length)
-            writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.toRaw(), value: bytes.count)
+            writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.rawValue, value: bytes.count)
             output.write(bytes)
         }
     }
@@ -206,7 +214,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
             }
         }
         
-        output.write(SpearalType.DATE_TIME.toRaw() | parameters)
+        output.write(SpearalType.DATE_TIME.rawValue | parameters)
 
         var inverse:UInt8 = 0x00;
         var year = components.year - 2000;
@@ -234,20 +242,56 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     func writeAnyClass(value:AnyClass) {
-        let name = context.introspector.classNameOf(value)
+        let name = context.getIntrospector()!.classNameOfAnyClass(value)
         writeStringData(SpearalType.CLASS, value: name)
     }
     
     func writeNSObject(value:NSObject) {
-        if !putAndWriteObjectReference(SpearalType.BEAN, p: unsafeBitCast(value, UnsafePointer<Void>.self)) {
-            let clsInfo = context.introspector.introspect(value.dynamicType)
-            clsInfo.name
+        if !putAndWriteObjectReference(SpearalType.BEAN, id: unsafeAddressOf(value)) {
+            let type = value.dynamicType
+
+            var properties = filter.get(type)
+            if let partial  = value as? SpearalPartialable {
+                let definedProperties = partial._$definedPropertyNames
+                properties = properties.filter({ (elt:String) -> Bool in
+                    return contains(definedProperties, elt)
+                })
+            }
+            
+            let description:String = createDescription(type, propertyNames: properties)
+            
+            writeStringData(SpearalType.BEAN, value: description)
+            
+            for property in properties {
+                let anyObject:AnyObject? = value.valueForKey(property)
+                writeAny(SpearalEncoderImpl.anyObjectToAny(anyObject))
+            }
         }
+    }
+    
+    private class func anyObjectToAny(anyObject:AnyObject?) -> Any? {
+        return anyObject as NSObject? as Any?
+    }
+    
+    private func createDescription(type:AnyClass, propertyNames:[String]) -> String {
+        let aliasStrategy = self.context.getAliasStrategy()
+        let localClassName = self.context.getIntrospector()?.classNameOfAnyClass(type) ?? ""
+        let remoteClassName = aliasStrategy?.localToRemoteClassName(localClassName) ?? localClassName
+        let propertyNameAliases = aliasStrategy?.localToRemoteProperties(localClassName) ?? [String: String]()
+        
+        if propertyNameAliases.isEmpty {
+            return remoteClassName + "#" + ",".join(propertyNames)
+        }
+
+        let remotePropertyNames = propertyNames.map({ (localPropertyName:String) -> String in
+            return propertyNameAliases[localPropertyName] ?? localPropertyName
+        })
+        return remoteClassName + "#" + ",".join(remotePropertyNames)
     }
     
     private func writeStringData(type:SpearalType, value:String) {
         if value.isEmpty {
-            output.write(type.toRaw())
+            output.write(type.rawValue)
             output.write(0)
             return
         }
@@ -255,7 +299,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         if !putAndWriteStringReference(type, s: value) {
             var bytes = [UInt8]()
             bytes.extend(value.utf8)
-            writeTypeUnsignedInt32(type.toRaw(), value: bytes.count)
+            writeTypeUnsignedInt32(type.rawValue, value: bytes.count)
             output.write(bytes)
         }
     }
@@ -263,16 +307,16 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     private func putAndWriteStringReference(type:SpearalType, s:String) -> Bool {
         let index = sharedStrings.putIfAbsent(s)
         if index != -1 {
-            writeTypeUnsignedInt32(type.toRaw() | 0x04, value: index)
+            writeTypeUnsignedInt32(type.rawValue | 0x04, value: index)
             return true
         }
         return false
     }
     
-    private func putAndWriteObjectReference(type:SpearalType, p:UnsafePointer<Void>) -> Bool {
-        let index = sharedObjects.putIfAbsent(p)
+    private func putAndWriteObjectReference(type:SpearalType, id:UnsafePointer<Void>) -> Bool {
+        let index = sharedObjects.putIfAbsent(id)
         if index != -1 {
-            writeTypeUnsignedInt32(type.toRaw() | 0x08, value: index)
+            writeTypeUnsignedInt32(type.rawValue | 0x08, value: index)
             return true
         }
         return false
@@ -321,5 +365,4 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         }
         return (value <= 0xffffffffffffff ? 6 : 7);
     }
-    
 }
