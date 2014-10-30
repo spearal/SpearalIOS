@@ -41,5 +41,10 @@ public class Person: SpearalSelfObserver {
         this.age = age
     }
     
+//    override public func setValue(value: AnyObject?, forKey key: String) {
+//        println("setValue: \(key)")
+//        super.setValue(value, forKey: key)
+//    }
+    
     private lazy var this:Person = (self as Person)
 }

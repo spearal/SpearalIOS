@@ -327,6 +327,11 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(bc2 as [UInt8], b1)
     }
     
+    func testCollection() {
+        var obj = encodeDecode([0, 1, 2, 3])
+        println(obj)
+    }
+    
     func testDate() {
         var date = NSDate()
         XCTAssertEqual(encodeDecode(date) as NSDate, date)

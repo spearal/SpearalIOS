@@ -35,6 +35,11 @@ public protocol SpearalCoderProvider: SpearalRepeatable {
     func coder(any:Any) -> SpearalCoder?
 }
 
+public protocol SpearalConverter {
+    
+    func convert(value:AnyObject?, targetClassName:String, targetPropertyName:String) -> AnyObject?
+}
+
 public typealias SpearalClassNameAliaser = (String) -> String
 public protocol SpearalAliasStrategy {
     
@@ -79,10 +84,12 @@ public protocol SpearalPropertyFilter {
 public protocol SpearalContext {
 
     func configure(introspector:SpearalIntrospector) -> SpearalContext
+    func configure(converter:SpearalConverter) -> SpearalContext
     func configure(aliasStrategy:SpearalAliasStrategy) -> SpearalContext
     func configure(coderProvider:SpearalCoderProvider, append:Bool) -> SpearalContext
 
     func getIntrospector() -> SpearalIntrospector?
     func getAliasStrategy() -> SpearalAliasStrategy?
     func getCoderFor(any:Any) -> SpearalCoder?
+    func convert(value:AnyObject?, targetClassName:String, targetPropertyName:String) -> AnyObject?
 }

@@ -72,7 +72,7 @@ class SpearalDecoderImpl: SpearalDecoder {
                 return readDateTime(parameterizedType)
                 
             case .COLLECTION:
-                println("COLLECTION")
+                return readCollection(parameterizedType)
             case .MAP:
                 println("MAP")
                 
@@ -214,6 +214,24 @@ class SpearalDecoderImpl: SpearalDecoder {
         return calendar.dateFromComponents(components)!
     }
     
+    func readCollection(parameterizedType:UInt8) -> Any {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            return sharedObjects[indexOrLength]
+        }
+        
+        var collection = [Any?](count: indexOrLength, repeatedValue: nil)
+        sharedObjects.append(collection)
+        
+        let max = (indexOrLength - 1)
+        for i in 0...max {
+            collection[i] = readAny()
+        }
+        
+        return collection
+    }
+    
     func readClass(parameterizedType:UInt8) -> AnyClass? {
         let name = readStringData(parameterizedType)
         return context.getIntrospector()!.classForName(name)
@@ -238,7 +256,11 @@ class SpearalDecoderImpl: SpearalDecoder {
         let properties = info.properties
         for propertyName in propertyNames {
             if contains(properties, propertyName) {
-                let value:AnyObject? = readAny() as NSObject? as AnyObject?
+                let value:AnyObject? = context.convert(
+                    readAny() as NSObject? as AnyObject?,
+                    targetClassName: className,
+                    targetPropertyName: propertyName
+                )
                 instance.setValue(value, forKey: propertyName)
             }
         }
@@ -264,7 +286,8 @@ class SpearalDecoderImpl: SpearalDecoder {
         if aliasStrategy != nil {
             let aliases = aliasStrategy!.remoteToLocalProperties(localClassName)
             
-            for var i = 0; i < propertyNames.count; i++ {
+            let max = (propertyNames.count - 1)
+            for i in 0...max {
                 propertyNames[i] = aliases[propertyNames[i]] ?? propertyNames[i]
             }
         }

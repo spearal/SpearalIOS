@@ -23,6 +23,7 @@ import Foundation
 class SpearalContextImpl: SpearalContext {
     
     private var introspector:SpearalIntrospector?
+    private var converter:SpearalConverter?
     private var aliasStrategy:SpearalAliasStrategy?
     
     private var coderProviders:[SpearalCoderProvider]
@@ -38,6 +39,16 @@ class SpearalContextImpl: SpearalContext {
         return self
     }
     
+    func configure(converter:SpearalConverter) -> SpearalContext {
+        self.converter = converter
+        return self
+    }
+    
+    func configure(aliasStrategy:SpearalAliasStrategy) -> SpearalContext {
+        self.aliasStrategy = aliasStrategy
+        return self
+    }
+    
     func configure(coderProvider:SpearalCoderProvider, append:Bool) -> SpearalContext {
         if append {
             coderProviders.append(coderProvider)
@@ -48,13 +59,15 @@ class SpearalContextImpl: SpearalContext {
         return self
     }
     
-    func configure(aliasStrategy:SpearalAliasStrategy) -> SpearalContext {
-        self.aliasStrategy = aliasStrategy
-        return self
-    }
-    
     func getIntrospector() -> SpearalIntrospector? {
         return self.introspector
+    }
+    
+    func convert(value:AnyObject?, targetClassName:String, targetPropertyName:String) -> AnyObject? {
+        if converter != nil {
+            return converter!.convert(value, targetClassName: targetClassName, targetPropertyName: targetPropertyName)
+        }
+        return value
     }
     
     func getAliasStrategy() -> SpearalAliasStrategy? {

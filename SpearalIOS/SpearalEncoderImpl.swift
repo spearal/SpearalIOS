@@ -190,6 +190,15 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         }
     }
     
+    func writeNSArray(value:NSArray) {
+        if !putAndWriteObjectReference(SpearalType.COLLECTION, id: unsafeAddressOf(value)) {
+            writeTypeUnsignedInt32(SpearalType.COLLECTION.rawValue, value: value.count)
+            for elt in value {
+                writeAny(SpearalEncoderImpl.anyObjectToAny(elt))
+            }
+        }
+    }
+    
     func writeNSDate(value:NSDate) {
         let components = calendar.components(
             .CalendarUnitYear | .CalendarUnitMonth | .CalendarUnitDay |

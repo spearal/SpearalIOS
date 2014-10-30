@@ -41,6 +41,7 @@ public protocol SpearalExtendedEncoder: SpearalEncoder {
     func writeString(value:String)
     func writeUInt8Array(value:[UInt8])
     func writeNSData(value:NSData)
+    func writeNSArray(value:NSArray)
     func writeNSDate(value:NSDate)
     func writeAnyClass(value:AnyClass)
     func writeNSObject(value:NSObject)
