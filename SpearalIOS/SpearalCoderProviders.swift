@@ -50,6 +50,10 @@ class SpearalStandardCoderProvider: SpearalCoderProvider {
         encoder.writeNSArray(value as NSArray)
     }}
     
+    class NSDictionaryCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
+        encoder.writeNSDictionary(value as NSDictionary)
+    }}
+    
     class NSDateCoder: SpearalCoder { func encode(encoder:SpearalExtendedEncoder, value:Any) {
         encoder.writeNSDate(value as NSDate)
     }}
@@ -69,6 +73,7 @@ class SpearalStandardCoderProvider: SpearalCoderProvider {
     private let uint8ArrayCoder:SpearalCoder = UInt8ArrayCoder()
     private let nsDataCoder:SpearalCoder = NSDataCoder()
     private let nsArrayCoder:SpearalCoder = NSArrayCoder()
+    private let nsDictionaryCoder:SpearalCoder = NSDictionaryCoder()
     private let nsDateCoder:SpearalCoder = NSDateCoder()
     private let anyClassCoder:SpearalCoder = AnyClassCoder()
     private let nsObjectCoder:SpearalCoder = NSObjectCoder()
@@ -89,6 +94,8 @@ class SpearalStandardCoderProvider: SpearalCoderProvider {
             return nsDataCoder
         case let value as NSArray:
             return nsArrayCoder
+        case let value as NSDictionary:
+            return nsDictionaryCoder
         case let value as NSDate:
             return nsDateCoder
         case let value as AnyClass:

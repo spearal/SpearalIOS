@@ -328,8 +328,32 @@ class SpearalIOSTests: XCTestCase {
     }
     
     func testCollection() {
-        var obj = encodeDecode([0, 1, 2, 3])
-        println(obj)
+        let intArray:[Int] = [0, 1, 2, 3]
+        var copy = encodeDecode(intArray) as NSArray
+        
+        XCTAssertEqual(intArray, copy)
+        
+        let compositeArray:[AnyObject] = [0, "1", NSDate()]
+        copy = encodeDecode(compositeArray) as NSArray
+        
+        XCTAssertEqual(compositeArray, copy)
+    }
+    
+    func testMap() {
+        let intMap:[Int: Int] = [0: 1, 2: 3]
+        var copy = encodeDecode(intMap) as NSDictionary
+        
+        XCTAssertEqual(intMap, copy)
+        
+        let stringIntMap:[String: Int] = ["0": 1, "2": 3]
+        copy = encodeDecode(stringIntMap) as NSDictionary
+        
+        XCTAssertEqual(stringIntMap, copy)
+        
+        let compositeMap:[NSObject: AnyObject] = ["0": 1, 2: NSDate()]
+        copy = encodeDecode(stringIntMap) as NSDictionary
+        
+        XCTAssertEqual(stringIntMap, copy)
     }
     
     func testDate() {

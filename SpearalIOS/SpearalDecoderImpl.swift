@@ -74,7 +74,7 @@ class SpearalDecoderImpl: SpearalDecoder {
             case .COLLECTION:
                 return readCollection(parameterizedType)
             case .MAP:
-                println("MAP")
+                return readMap(parameterizedType)
                 
             case .ENUM:
                 println("ENUM")
@@ -214,22 +214,43 @@ class SpearalDecoderImpl: SpearalDecoder {
         return calendar.dateFromComponents(components)!
     }
     
-    func readCollection(parameterizedType:UInt8) -> Any {
+    func readCollection(parameterizedType:UInt8) -> [NSObject] {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
-            return sharedObjects[indexOrLength]
+            return sharedObjects[indexOrLength] as [NSObject]
         }
         
-        var collection = [Any?](count: indexOrLength, repeatedValue: nil)
+        var collection = [NSObject](count: indexOrLength, repeatedValue: NSNull())
         sharedObjects.append(collection)
         
         let max = (indexOrLength - 1)
         for i in 0...max {
-            collection[i] = readAny()
+            collection[i] = readAny() as? NSObject ?? NSNull()
         }
         
         return collection
+    }
+    
+    func readMap(parameterizedType:UInt8) -> [NSObject: NSObject] {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            return sharedObjects[indexOrLength] as [NSObject: NSObject]
+        }
+        
+        var map = [NSObject: NSObject](minimumCapacity: indexOrLength)
+        sharedObjects.append(map)
+        
+        let max = (indexOrLength - 1)
+        for i in 0...max {
+            let key:NSObject = readAny() as? NSObject ?? NSNull()
+            let val:NSObject = readAny() as? NSObject ?? NSNull()
+            
+            map[key] = val
+        }
+        
+        return map
     }
     
     func readClass(parameterizedType:UInt8) -> AnyClass? {
