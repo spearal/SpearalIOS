@@ -37,7 +37,9 @@ public protocol SpearalExtendedEncoder: SpearalEncoder {
     
     func writeBool(value:Bool)
     func writeInt(value:Int)
+    func writeBigIntegral(value:String)
     func writeDouble(value:Double)
+    func writeBigFloating(value:String)
     func writeString(value:String)
     func writeUInt8Array(value:[UInt8])
     func writeNSData(value:NSData)

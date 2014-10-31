@@ -132,6 +132,10 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         output.write(value)
     }
     
+    func writeBigIntegral(value:String) {
+        writeBigNumberData(SpearalType.BIG_INTEGRAL, representation: exponentize(value))
+    }
+    
     func writeDouble(value:Double) {
         // value != NaN, +/- Infinity and -0.0
         if value.isFinite && value.floatingPointClass != FloatingPointClassification.NegativeZero &&
@@ -171,6 +175,10 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         
         output.write(SpearalType.FLOATING.rawValue)
         writeUInt64(unsafeBitCast(value, UInt64.self))
+    }
+    
+    func writeBigFloating(value:String) {
+        writeBigNumberData(SpearalType.BIG_FLOATING, representation: value)
     }
     
     func writeString(value:String) {
@@ -392,5 +400,45 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
             return (value <= 0xffffffffff ? 4 : 5)
         }
         return (value <= 0xffffffffffffff ? 6 : 7);
+    }
+    
+    private func exponentize(value:String) -> String {
+        if value.hasSuffix("000") {
+            let ZERO = UInt8(UnicodeScalar("0").value)
+            
+            var bytes = [UInt8]()
+            bytes.extend(value.utf8)
+            
+            var zeros:Int = 3
+            for var i:Int = Int(bytes.count - 4); i >= 0; i-- {
+                if bytes[i] != ZERO {
+                    break
+                }
+                zeros++
+            }
+            
+            bytes.removeRange(Range<Int>(start: bytes.endIndex - zeros, end: bytes.endIndex))
+            return "\(NSString(bytes: bytes, length: bytes.count, encoding: NSUTF8StringEncoding) as String)E\(zeros)"
+        }
+        return value
+    }
+    
+    private func writeBigNumberData(type:SpearalType, representation:String) {
+        if !putAndWriteStringReference(type, s: representation) {
+            var bytes = [UInt8]()
+            bytes.extend(representation.utf8)
+            
+            writeTypeUnsignedInt32(type.rawValue, value: bytes.count)
+            
+            for var i = 0; i < bytes.count; {
+                var b:UInt8 = BIG_NUMBER_ALPHA_MIRROR[Int(bytes[i++])] << 4
+                if i == bytes.count {
+                    output.write(b)
+                    break
+                }
+                b |= BIG_NUMBER_ALPHA_MIRROR[Int(bytes[i++])]
+                output.write(b)
+            }
+        }
     }
 }

@@ -20,6 +20,24 @@
 
 import Foundation
 
+private func bigNumberAplha() -> [UInt8] {
+    var bytes = [UInt8]()
+    bytes.extend("0123456789+-.E".utf8)
+    return bytes
+}
+
+let BIG_NUMBER_ALPHA = bigNumberAplha()
+
+private func bigNumberAplhaMirror() -> [UInt8] {
+    var bytes = [UInt8](count: 0xff, repeatedValue: 0)
+    for i in 0...(BIG_NUMBER_ALPHA.count - 1) {
+        bytes[Int(BIG_NUMBER_ALPHA[i])] = UInt8(i)
+    }
+    return bytes
+}
+
+let BIG_NUMBER_ALPHA_MIRROR = bigNumberAplhaMirror()
+
 class SpearalContextImpl: SpearalContext {
     
     private var introspector:SpearalIntrospector?

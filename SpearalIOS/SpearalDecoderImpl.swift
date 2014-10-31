@@ -97,12 +97,12 @@ class SpearalDecoderImpl: SpearalDecoder {
             case .INTEGRAL:
                 value = readIntegral(parameterizedType)
             case .BIG_INTEGRAL:
-                println("BIG_INTEGRAL")
+                value = readBigIntegral(parameterizedType)
                 
             case .FLOATING:
                 value = readFloating(parameterizedType)
             case .BIG_FLOATING:
-                println("BIG_FLOATING")
+                value = readBigFloating(parameterizedType)
                 
             case .STRING:
                 value = readString(parameterizedType)
@@ -170,6 +170,16 @@ class SpearalDecoderImpl: SpearalDecoder {
         return value
     }
     
+    func readBigIntegral(parameterizedType:UInt8) -> SpearalBigIntegral {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isStringReference(parameterizedType) {
+            return SpearalBigIntegral(sharedStrings[indexOrLength])
+        }
+        
+        return SpearalBigIntegral(readBigNumberData(indexOrLength))
+    }
+    
     func readFloating(parameterizedType:UInt8) -> Double {
         if (parameterizedType & 0x08) != 0 {
             let length0 = (parameterizedType & 0x03)
@@ -206,6 +216,16 @@ class SpearalDecoderImpl: SpearalDecoder {
         pointer[0] = input.read()
         
         return value
+    }
+    
+    func readBigFloating(parameterizedType:UInt8) -> SpearalBigFloating {
+        let indexOrLength = readIndexOrLength(parameterizedType)
+        
+        if SpearalDecoderImpl.isStringReference(parameterizedType) {
+            return SpearalBigFloating(sharedStrings[indexOrLength])
+        }
+        
+        return SpearalBigFloating(readBigNumberData(indexOrLength))
     }
     
     func readString(parameterizedType:UInt8) -> String {
@@ -432,5 +452,24 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     private class func isStringReference(parameterizedType:UInt8) -> Bool {
         return ((parameterizedType & 0x04) != 0)
+    }
+    
+    private func readBigNumberData(length:Int) -> String {
+        let count = (length / 2) + (length % 2)
+        
+        var chars = [UInt8](count: length, repeatedValue: 0)
+        var iChar = 0
+        for i in 0...count {
+            var b = input.read()
+            chars[iChar++] = BIG_NUMBER_ALPHA[Int((b & 0xf0) >> 4)]
+            if iChar == length {
+                break
+            }
+            chars[iChar++] = BIG_NUMBER_ALPHA[Int(b & 0x0f)]
+        }
+        
+        let value = NSString(bytes: chars, length: chars.count, encoding: NSUTF8StringEncoding) as String
+        sharedStrings.append(value)
+        return value
     }
 }

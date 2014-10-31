@@ -135,11 +135,37 @@ public protocol SpearalContext {
 @objc(SpearalEnum)
 public class SpearalEnum: NSObject {
     
-    let className:String
-    let valueName:String
+    public let className:String
+    public let valueName:String
     
     public init(_ className:String, valueName:String) {
         self.className = className
         self.valueName = valueName
+    }
+}
+
+@objc(SpearalBigIntegral)
+public protocol SpearalBigNumber {
+    
+    var representation:String { get }
+}
+
+@objc(SpearalBigIntegral)
+public class SpearalBigIntegral: NSObject, SpearalBigNumber {
+    
+    public let representation:String
+    
+    public init(_ representation:String) {
+        self.representation = representation
+    }
+}
+
+@objc(SpearalBigFloating)
+public class SpearalBigFloating: NSObject, SpearalBigNumber {
+    
+    public let representation:String
+    
+    public init(_ representation:String) {
+        self.representation = representation
     }
 }

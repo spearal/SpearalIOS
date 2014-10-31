@@ -435,6 +435,96 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertTrue(salutation == value)
     }
     
+    func testBigIntegral() {
+        
+        class MyBigIntegral {
+            
+            let value:String
+            
+            init(_ value:String) {
+                self.value = value
+            }
+        }
+        
+        class MyBigIntegralCoderProvider: SpearalCoderProvider {
+            
+            class MyBigIntegralCoder: SpearalCoder {
+                func encode(encoder:SpearalExtendedEncoder, value:Any) {
+                    encoder.writeBigIntegral((value as MyBigIntegral).value)
+                }
+            }
+            
+            private let myBigIntegralCoder:SpearalCoder = MyBigIntegralCoder()
+            
+            func coder(any:Any) -> SpearalCoder? {
+                if any is MyBigIntegral {
+                    return myBigIntegralCoder
+                }
+                return nil
+            }
+        }
+        
+        let encoderFactory = DefaultSpearalFactory()
+        encoderFactory.context.configure(MyBigIntegralCoderProvider(), append: false)
+        
+        let bigIntegral = MyBigIntegral("13712527002344000023401203400000")
+        
+        let out = InMemorySpearalOutput()
+        let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
+        encoder.writeAny(bigIntegral)
+        
+        let decoderFactory = DefaultSpearalFactory()
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let value = decoder.readAny() as SpearalBigIntegral
+        
+        XCTAssertEqual("137125270023440000234012034E5", value.representation)
+    }
+    
+    func testBigFloating() {
+        
+        class MyBigFloating {
+            
+            let value:String
+            
+            init(_ value:String) {
+                self.value = value
+            }
+        }
+        
+        class MyBigFloatingCoderProvider: SpearalCoderProvider {
+            
+            class MyBigFloatingCoder: SpearalCoder {
+                func encode(encoder:SpearalExtendedEncoder, value:Any) {
+                    encoder.writeBigFloating((value as MyBigFloating).value)
+                }
+            }
+            
+            private let myBigFloatingCoder:SpearalCoder = MyBigFloatingCoder()
+            
+            func coder(any:Any) -> SpearalCoder? {
+                if any is MyBigFloating {
+                    return myBigFloatingCoder
+                }
+                return nil
+            }
+        }
+        
+        let encoderFactory = DefaultSpearalFactory()
+        encoderFactory.context.configure(MyBigFloatingCoderProvider(), append: false)
+        
+        let bigIntegral = MyBigFloating("1234567890.948576")
+        
+        let out = InMemorySpearalOutput()
+        let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
+        encoder.writeAny(bigIntegral)
+        
+        let decoderFactory = DefaultSpearalFactory()
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let value = decoder.readAny() as SpearalBigFloating
+        
+        XCTAssertEqual("1234567890.948576", value.representation)
+    }
+    
     func testBean() {
         let aliasStrategy = BasicSpearalAliasStrategy(localToRemoteClassNames: [
             "Person": "com.cortez.samples.javaee7angular.data.Person"
