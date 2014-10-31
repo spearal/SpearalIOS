@@ -29,8 +29,8 @@ public protocol SpearalPartialable {
     var  _$definedPropertyNames:[String] { get }
 }
 
-@objc(SpearalSelfObserver)
-public class SpearalSelfObserver: NSObject, SpearalPartialable {
+@objc(SpearalAutoPartialable)
+public class SpearalAutoPartialable: NSObject, SpearalPartialable {
     
     private var observerContext = 0
     private var properties:[String: Bool]
@@ -40,7 +40,7 @@ public class SpearalSelfObserver: NSObject, SpearalPartialable {
         
         super.init()
         
-        let propertyNames = SpearalSelfObserver.getPropertyNames(self.dynamicType, stopClass: SpearalSelfObserver.self)
+        let propertyNames = SpearalAutoPartialable.getPropertyNames(self.dynamicType, stopClass: SpearalAutoPartialable.self)
         for propertyName in propertyNames {
             if propertyName.isEmpty || properties[propertyName] != nil {
                 continue
@@ -102,7 +102,7 @@ public class SpearalSelfObserver: NSObject, SpearalPartialable {
             
             for var i:Int = 0; i < Int(count); i++ {
                 let property = list[i]
-                if !contains(String.fromCString(property_getAttributes(property))!.componentsSeparatedByString(","), "R") {
+                if property_copyAttributeValue(property, "R") == nil {
                     propertyNames.append(String.fromCString(property_getName(property))!)
                 }
             }

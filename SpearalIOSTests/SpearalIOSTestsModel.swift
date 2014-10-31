@@ -21,7 +21,7 @@
 import Foundation
 
 @objc(Person)
-public class Person: SpearalSelfObserver {
+public class Person: SpearalAutoPartialable {
     
     dynamic var firstName:String?
     dynamic var lastName:String?
@@ -40,11 +40,6 @@ public class Person: SpearalSelfObserver {
         this.description_ = description
         this.age = age
     }
-    
-//    override public func setValue(value: AnyObject?, forKey key: String) {
-//        println("setValue: \(key)")
-//        super.setValue(value, forKey: key)
-//    }
     
     private lazy var this:Person = (self as Person)
 }
