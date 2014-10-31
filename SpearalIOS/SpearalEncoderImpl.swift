@@ -79,6 +79,9 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         else if let coder = context.getCoderFor(any!) {
             coder.encode(self, value: any!)
         }
+        else {
+            println("No coder for value: \(any)")
+        }
     }
     
     func writeNil() {
