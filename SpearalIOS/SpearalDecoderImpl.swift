@@ -214,38 +214,42 @@ class SpearalDecoderImpl: SpearalDecoder {
         return calendar.dateFromComponents(components)!
     }
     
-    func readCollection(parameterizedType:UInt8) -> [NSObject] {
+    func readCollection(parameterizedType:UInt8) -> [AnyObject] {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
-            return sharedObjects[indexOrLength] as [NSObject]
+            return sharedObjects[indexOrLength] as [AnyObject]
         }
         
-        var collection = [NSObject](count: indexOrLength, repeatedValue: NSNull())
+        let null = NSNull()
+
+        var collection = [AnyObject](count: indexOrLength, repeatedValue: null)
         sharedObjects.append(collection)
         
         let max = (indexOrLength - 1)
         for i in 0...max {
-            collection[i] = readAny() as? NSObject ?? NSNull()
+            collection[i] = readAny() as? NSObject ?? null
         }
         
         return collection
     }
     
-    func readMap(parameterizedType:UInt8) -> [NSObject: NSObject] {
+    func readMap(parameterizedType:UInt8) -> [NSObject : AnyObject] {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
-            return sharedObjects[indexOrLength] as [NSObject: NSObject]
+            return sharedObjects[indexOrLength] as [NSObject: AnyObject]
         }
         
-        var map = [NSObject: NSObject](minimumCapacity: indexOrLength)
+        let null = NSNull()
+        
+        var map = [NSObject: AnyObject](minimumCapacity: indexOrLength)
         sharedObjects.append(map)
         
         let max = (indexOrLength - 1)
         for i in 0...max {
-            let key:NSObject = readAny() as? NSObject ?? NSNull()
-            let val:NSObject = readAny() as? NSObject ?? NSNull()
+            let key:NSObject = readAny() as? NSObject ?? null
+            let val:NSObject = readAny() as? NSObject ?? null
             
             map[key] = val
         }
