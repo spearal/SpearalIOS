@@ -20,6 +20,42 @@
 
 import Foundation
 
+private class SpearalConverterContextRootImpl: SpearalConverterContextRoot {
+}
+
+private class SpearalConverterContextObjectImpl: SpearalConverterContextObject {
+    
+    let type:AnyClass
+    
+    private var _property:String?
+    var property:String {
+        get { return _property! }
+    }
+    
+    init(_ type:AnyClass) {
+        self.type = type
+    }
+}
+
+private class SpearalConverterContextCollectionImpl: SpearalConverterContextCollection {
+    
+    private var _index:Int?
+    var index:Int {
+        get { return _index! }
+    }
+}
+
+private class SpearalConverterContextMapKeyImpl: SpearalConverterContextMapKey {
+}
+
+private class SpearalConverterContextMapValueImpl: SpearalConverterContextMapValue {
+    
+    private var _key:NSObject?
+    var key:NSObject {
+        get { return _key! }
+    }
+}
+
 class SpearalDecoderImpl: SpearalDecoder {
     
     let context:SpearalContext
@@ -27,6 +63,7 @@ class SpearalDecoderImpl: SpearalDecoder {
 
     private var sharedStrings:[String]
     private var sharedObjects:[Any]
+    private var depth:Int
     
     private let calendar:NSCalendar
     
@@ -36,56 +73,65 @@ class SpearalDecoderImpl: SpearalDecoder {
 
         self.sharedStrings = [String]()
         self.sharedObjects = [Any]()
+        self.depth = 0
         
         self.calendar = NSCalendar(identifier: NSGregorianCalendar)!
     }
     
     func readAny() -> Any? {
+        var value:Any?
+        
         let parameterizedType = input.read()
+        
+        ++depth
         
         if let type = SpearalType.valueOf(parameterizedType) {
             switch type {
             case .NULL:
-                return nil
+                value = nil
             case .TRUE:
-                return true
+                value = true
             case .FALSE:
-                return false
+                value = false
 
             case .INTEGRAL:
-                return readIntegral(parameterizedType)
+                value = readIntegral(parameterizedType)
             case .BIG_INTEGRAL:
                 println("BIG_INTEGRAL")
                 
             case .FLOATING:
-                return readFloating(parameterizedType)
+                value = readFloating(parameterizedType)
             case .BIG_FLOATING:
                 println("BIG_FLOATING")
                 
             case .STRING:
-                return readString(parameterizedType)
+                value = readString(parameterizedType)
                 
             case .BYTE_ARRAY:
-                return readByteArray(parameterizedType)
+                value = readByteArray(parameterizedType)
                 
             case .DATE_TIME:
-                return readDateTime(parameterizedType)
+                value = readDateTime(parameterizedType)
                 
             case .COLLECTION:
-                return readCollection(parameterizedType)
+                value = readCollection(parameterizedType)
             case .MAP:
-                return readMap(parameterizedType)
+                value = readMap(parameterizedType)
                 
             case .ENUM:
-                println("ENUM")
+                value = readEnum(parameterizedType)
             case .CLASS:
-                return readClass(parameterizedType)
+                value = readClass(parameterizedType)
             case .BEAN:
-                return readBean(parameterizedType)
+                value = readBean(parameterizedType)
             }
         }
+        
+        if --depth == 0 {
+            value = context.convert(value, context: SpearalConverterContextRootImpl())
+        }
 
-        return "???"
+        return value
     }
     
     func readIntegral(parameterizedType:UInt8) -> Int {
@@ -226,9 +272,13 @@ class SpearalDecoderImpl: SpearalDecoder {
         var collection = [AnyObject](count: indexOrLength, repeatedValue: null)
         sharedObjects.append(collection)
         
+        let converterContext = SpearalConverterContextCollectionImpl()
+        
         let max = (indexOrLength - 1)
         for i in 0...max {
-            collection[i] = readAny() as? NSObject ?? null
+            converterContext._index = i
+            let value = context.convert(readAny(), context: converterContext)
+            collection[i] = value as? NSObject ?? null
         }
         
         return collection
@@ -246,15 +296,28 @@ class SpearalDecoderImpl: SpearalDecoder {
         var map = [NSObject: AnyObject](minimumCapacity: indexOrLength)
         sharedObjects.append(map)
         
+        let converterKeyContext = SpearalConverterContextMapKeyImpl()
+        let converterValueContext = SpearalConverterContextMapValueImpl()
+        
         let max = (indexOrLength - 1)
         for i in 0...max {
-            let key:NSObject = readAny() as? NSObject ?? null
-            let val:NSObject = readAny() as? NSObject ?? null
+            let key:NSObject = context.convert(readAny(), context: converterKeyContext) as? NSObject ?? null
+
+            converterValueContext._key = key
+            let val:NSObject = context.convert(readAny(), context: converterValueContext) as? NSObject ?? null
             
             map[key] = val
         }
         
         return map
+    }
+    
+    func readEnum(parameterizedType:UInt8) -> SpearalEnum {
+        let remoteClassName = readStringData(parameterizedType)
+        let valueName =  readString(input.read())
+        
+        let localClassName = context.getAliasStrategy()?.remoteToLocalClassName(remoteClassName) ?? remoteClassName
+        return SpearalEnum(localClassName, valueName: valueName)
     }
     
     func readClass(parameterizedType:UInt8) -> AnyClass? {
@@ -273,19 +336,18 @@ class SpearalDecoderImpl: SpearalDecoder {
         let (className, propertyNames) = parseDescription(description)
 
         let cls = NSClassFromString(className) as NSObject.Type
+        
         var instance = cls()
         
         sharedObjects.append(instance as NSObject as Any)
         
+        let converterContext = SpearalConverterContextObjectImpl(cls)
         let info = context.getIntrospector()!.introspect(cls)
         let properties = info.properties
         for propertyName in propertyNames {
             if contains(properties, propertyName) {
-                let value:AnyObject? = context.convert(
-                    readAny() as NSObject? as AnyObject?,
-                    targetClassName: className,
-                    targetPropertyName: propertyName
-                )
+                converterContext._property = propertyName
+                let value:AnyObject? = context.convert(readAny(), context: converterContext) as NSObject? as AnyObject?
                 instance.setValue(value, forKey: propertyName)
             }
         }
@@ -293,7 +355,7 @@ class SpearalDecoderImpl: SpearalDecoder {
     }
     
     private func parseDescription(description:String) -> (String, [String]) {
-        let aliasStrategy = self.context.getAliasStrategy()
+        let aliasStrategy = context.getAliasStrategy()
         
         let classNamePropertyNames = description.componentsSeparatedByString("#")
         

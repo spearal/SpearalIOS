@@ -27,7 +27,6 @@ public protocol SpearalInput {
     func read(count:Int) -> [UInt8]
 }
 
-
 public protocol SpearalDecoder {
     
     func readAny() -> Any?

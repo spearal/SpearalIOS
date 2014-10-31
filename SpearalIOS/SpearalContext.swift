@@ -35,9 +35,45 @@ public protocol SpearalCoderProvider: SpearalRepeatable {
     func coder(any:Any) -> SpearalCoder?
 }
 
+@objc(SpearalConverterContext)
+public protocol SpearalConverterContext {
+    
+}
+
+@objc(SpearalConverterContextRoot)
+public protocol SpearalConverterContextRoot: SpearalConverterContext {
+}
+
+@objc(SpearalConverterContextObject)
+public protocol SpearalConverterContextObject: SpearalConverterContext {
+    
+    var type:AnyClass { get }
+    var property:String { get }
+}
+
+@objc(SpearalConverterContextCollection)
+public protocol SpearalConverterContextCollection: SpearalConverterContext {
+    
+    var index:Int { get }
+}
+
+@objc(SpearalConverterContextMapKey)
+public protocol SpearalConverterContextMapKey: SpearalConverterContext {
+}
+
+@objc(SpearalConverterContextMapValue)
+public protocol SpearalConverterContextMapValue: SpearalConverterContext {
+    
+    var key:NSObject { get }
+}
+
 public protocol SpearalConverter {
     
-    func convert(value:AnyObject?, targetClassName:String, targetPropertyName:String) -> AnyObject?
+    func convert(value:Any?, context:SpearalConverterContext) -> Any?
+}
+public protocol SpearalConverterProvider: SpearalRepeatable {
+    
+    func converter(any:Any?) -> SpearalConverter?
 }
 
 public typealias SpearalClassNameAliaser = (String) -> String
@@ -84,12 +120,26 @@ public protocol SpearalPropertyFilter {
 public protocol SpearalContext {
 
     func configure(introspector:SpearalIntrospector) -> SpearalContext
-    func configure(converter:SpearalConverter) -> SpearalContext
     func configure(aliasStrategy:SpearalAliasStrategy) -> SpearalContext
     func configure(coderProvider:SpearalCoderProvider, append:Bool) -> SpearalContext
+    func configure(converterPropvider:SpearalConverterProvider, append:Bool) -> SpearalContext
 
     func getIntrospector() -> SpearalIntrospector?
     func getAliasStrategy() -> SpearalAliasStrategy?
     func getCoderFor(any:Any) -> SpearalCoder?
-    func convert(value:AnyObject?, targetClassName:String, targetPropertyName:String) -> AnyObject?
+    func getConverterFor(any:Any?) -> SpearalConverter?
+    
+    func convert(any:Any?, context:SpearalConverterContext) -> Any?
+}
+
+@objc(SpearalEnum)
+public class SpearalEnum: NSObject {
+    
+    let className:String
+    let valueName:String
+    
+    public init(_ className:String, valueName:String) {
+        self.className = className
+        self.valueName = valueName
+    }
 }

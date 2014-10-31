@@ -263,6 +263,12 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         }
     }
     
+    func writeEnum(className:String, valueName:String) {
+        let remoteClassName = context.getAliasStrategy()?.localToRemoteClassName(className) ?? className
+        writeStringData(SpearalType.ENUM, value: remoteClassName)
+        writeStringData(SpearalType.STRING, value: valueName)
+    }
+    
     func writeAnyClass(value:AnyClass) {
         let name = context.getIntrospector()!.classNameOfAnyClass(value)
         writeStringData(SpearalType.CLASS, value: name)
@@ -296,8 +302,8 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     private func createDescription(type:AnyClass, propertyNames:[String]) -> String {
-        let aliasStrategy = self.context.getAliasStrategy()
-        let localClassName = self.context.getIntrospector()?.classNameOfAnyClass(type) ?? ""
+        let aliasStrategy = context.getAliasStrategy()
+        let localClassName = context.getIntrospector()?.classNameOfAnyClass(type) ?? ""
         let remoteClassName = aliasStrategy?.localToRemoteClassName(localClassName) ?? localClassName
         let propertyNameAliases = aliasStrategy?.localToRemoteProperties(localClassName) ?? [String: String]()
         

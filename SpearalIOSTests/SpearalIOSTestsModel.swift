@@ -43,3 +43,8 @@ public class Person: SpearalAutoPartialable {
     
     private lazy var this:Person = (self as Person)
 }
+
+enum Salutation {
+    case MR
+    case MS
+}

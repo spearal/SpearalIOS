@@ -23,15 +23,20 @@ import Foundation
 class SpearalContextImpl: SpearalContext {
     
     private var introspector:SpearalIntrospector?
-    private var converter:SpearalConverter?
     private var aliasStrategy:SpearalAliasStrategy?
     
     private var coderProviders:[SpearalCoderProvider]
     private var codersCache:[String: SpearalCoder]
     
+    private var converterProviders:[SpearalConverterProvider]
+    private var convertersCache:[String: SpearalConverter]
+    
     init() {
         self.coderProviders = [SpearalCoderProvider]()
         self.codersCache = [String: SpearalCoder]()
+        
+        self.converterProviders = [SpearalConverterProvider]()
+        self.convertersCache = [String: SpearalConverter]()
     }
     
     func configure(introspector:SpearalIntrospector) -> SpearalContext {
@@ -39,8 +44,13 @@ class SpearalContextImpl: SpearalContext {
         return self
     }
     
-    func configure(converter:SpearalConverter) -> SpearalContext {
-        self.converter = converter
+    func configure(converterProvider:SpearalConverterProvider, append:Bool) -> SpearalContext {
+        if append {
+            converterProviders.append(converterProvider)
+        }
+        else {
+            converterProviders.insert(converterProvider, atIndex: 0)
+        }
         return self
     }
     
@@ -63,31 +73,50 @@ class SpearalContextImpl: SpearalContext {
         return self.introspector
     }
     
-    func convert(value:AnyObject?, targetClassName:String, targetPropertyName:String) -> AnyObject? {
-        if converter != nil {
-            return converter!.convert(value, targetClassName: targetClassName, targetPropertyName: targetPropertyName)
-        }
-        return value
-    }
-    
     func getAliasStrategy() -> SpearalAliasStrategy? {
         return self.aliasStrategy
     }
     
     func getCoderFor(any:Any) -> SpearalCoder? {
-        let key:String = introspector!.classNameOfAny(any)!
-        
-        if let coder = codersCache[key] {
-            return coder
-        }
-        
-        for provider in coderProviders {
-            if let coder = provider.coder(any) {
-                codersCache[key] = coder
+        if !coderProviders.isEmpty {
+            let key:String = introspector!.classNameOfAny(any)!
+            
+            if let coder = codersCache[key] {
                 return coder
             }
+            
+            for provider in coderProviders {
+                if let coder = provider.coder(any) {
+                    codersCache[key] = coder
+                    return coder
+                }
+            }
         }
-        
         return nil
+    }
+    
+    func getConverterFor(any:Any?) -> SpearalConverter? {
+        if !converterProviders.isEmpty {
+            let key:String = introspector!.classNameOfAny(any)!
+            
+            if let converter = convertersCache[key] {
+                return converter
+            }
+            
+            for provider in converterProviders {
+                if let converter = provider.converter(any) {
+                    convertersCache[key] = converter
+                    return converter
+                }
+            }
+        }
+        return nil
+    }
+    
+    func convert(any:Any?, context:SpearalConverterContext) -> Any? {
+        if let converter = getConverterFor(any) {
+            return converter.convert(any, context: context)
+        }
+        return any
     }
 }

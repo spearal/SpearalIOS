@@ -367,6 +367,74 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertEqual(encodeDecode(date) as NSDate, date)
     }
     
+    func testEnum() {
+        
+        class SalutationCoderProvider: SpearalCoderProvider {
+            
+            class SalutationCoder: SpearalCoder {
+                func encode(encoder:SpearalExtendedEncoder, value:Any) {
+                    switch value as Salutation {
+                    case .MR:
+                        encoder.writeEnum("Salutation", valueName: "MR")
+                    case .MS:
+                        encoder.writeEnum("Salutation", valueName: "MS")
+                    }
+                }
+            }
+            
+            private let salutationCoder:SpearalCoder = SalutationCoder()
+            
+            func coder(any:Any) -> SpearalCoder? {
+                if any is Salutation {
+                    return salutationCoder
+                }
+                return nil
+            }
+        }
+        
+        class SalutationConverterProvider: SpearalConverterProvider {
+
+            class SalutationConverter: SpearalConverter {
+                func convert(value:Any?, context:SpearalConverterContext) -> Any? {
+                    switch (value as SpearalEnum).valueName {
+                    case "MR":
+                        return Salutation.MR
+                    case "MS":
+                        return Salutation.MS
+                    default:
+                        return nil
+                    }
+                }
+            }
+            
+            private let salutationConverter = SalutationConverter()
+
+            func converter(any:Any?) -> SpearalConverter? {
+                if (any as? SpearalEnum)?.className == "Salutation" {
+                    return salutationConverter
+                }
+                return nil
+            }
+        }
+        
+        let encoderFactory = DefaultSpearalFactory()
+        encoderFactory.context.configure(SalutationCoderProvider(), append: false)
+        
+        let salutation = Salutation.MR
+        
+        let out = InMemorySpearalOutput()
+        let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
+        encoder.writeAny(salutation)
+        
+        let decoderFactory = DefaultSpearalFactory()
+        decoderFactory.context.configure(SalutationConverterProvider(), append: false)
+        
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let value = decoder.readAny() as Salutation
+        
+        XCTAssertTrue(salutation == value)
+    }
+    
     func testBean() {
         let aliasStrategy = BasicSpearalAliasStrategy(localToRemoteClassNames: [
             "Person": "com.cortez.samples.javaee7angular.data.Person"
@@ -410,11 +478,30 @@ class SpearalIOSTests: XCTestCase {
     }
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1, aliasStrategy:SpearalAliasStrategy? = nil) -> Any? {
-        let out = InMemorySpearalOutput()
         let encoderFactory = DefaultSpearalFactory()
         if aliasStrategy != nil {
             encoderFactory.context.configure(aliasStrategy!)
         }
+        
+        let decoderFactory = DefaultSpearalFactory()
+        if aliasStrategy != nil {
+            decoderFactory.context.configure(aliasStrategy!)
+        }
+        
+        let out = InMemorySpearalOutput()
+        let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
+        encoder.writeAny(any)
+        
+        if expectedSize != -1 {
+            XCTAssertEqual(out.data.length, expectedSize)
+        }
+
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        return decoder.readAny()
+    }
+    
+    private func encodeDecode(any:Any?, expectedSize:Int = -1, encoderFactory:SpearalFactory, decoderFactory:SpearalFactory) -> Any? {
+        let out = InMemorySpearalOutput()
         let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(any)
         
@@ -422,10 +509,6 @@ class SpearalIOSTests: XCTestCase {
             XCTAssertEqual(out.data.length, expectedSize)
         }
         
-        let decoderFactory = DefaultSpearalFactory()
-        if aliasStrategy != nil {
-            decoderFactory.context.configure(aliasStrategy!)
-        }
         let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
         return decoder.readAny()
     }
