@@ -135,33 +135,49 @@ class SpearalDecoderImpl: SpearalDecoder {
     }
     
     func readIntegral(parameterizedType:UInt8) -> Int {
-        let length0 = (parameterizedType & 0x07);
+        let length0 = (parameterizedType & 0x07)
         
         var value:Int = 0
-        
-        if length0 >= 7 {
+        switch length0 {
+        case 7:
             value |= (Int(input.read()) << 56)
-        }
-        if length0 >= 6 {
             value |= (Int(input.read()) << 48)
-        }
-        if length0 >= 5 {
             value |= (Int(input.read()) << 40)
-        }
-        if length0 >= 4 {
             value |= (Int(input.read()) << 32)
-        }
-        if length0 >= 3 {
             value |= (Int(input.read()) << 24)
-        }
-        if length0 >= 2 {
             value |= (Int(input.read()) << 16)
-        }
-        if length0 >= 1 {
             value |= (Int(input.read()) << 8)
+        case 6:
+            value |= (Int(input.read()) << 48)
+            value |= (Int(input.read()) << 40)
+            value |= (Int(input.read()) << 32)
+            value |= (Int(input.read()) << 24)
+            value |= (Int(input.read()) << 16)
+            value |= (Int(input.read()) << 8)
+        case 5:
+            value |= (Int(input.read()) << 40)
+            value |= (Int(input.read()) << 32)
+            value |= (Int(input.read()) << 24)
+            value |= (Int(input.read()) << 16)
+            value |= (Int(input.read()) << 8)
+        case 4:
+            value |= (Int(input.read()) << 32)
+            value |= (Int(input.read()) << 24)
+            value |= (Int(input.read()) << 16)
+            value |= (Int(input.read()) << 8)
+        case 3:
+            value |= (Int(input.read()) << 24)
+            value |= (Int(input.read()) << 16)
+            value |= (Int(input.read()) << 8)
+        case 2:
+            value |= (Int(input.read()) << 16)
+            value |= (Int(input.read()) << 8)
+        case 1:
+            value |= (Int(input.read()) << 8)
+        default:
+            break
         }
         value |= Int(input.read())
-        
         
         if (parameterizedType & 0x08) != 0 {
             value = -value;
@@ -183,23 +199,10 @@ class SpearalDecoderImpl: SpearalDecoder {
     func readFloating(parameterizedType:UInt8) -> Double {
         if (parameterizedType & 0x08) != 0 {
             let length0 = (parameterizedType & 0x03)
-            
-            var value:Int = 0
-            if length0 >= 3 {
-                value |= (Int(input.read()) << 24)
-            }
-            if length0 >= 2 {
-                value |= (Int(input.read()) << 16)
-            }
-            if length0 >= 1 {
-                value |= (Int(input.read()) << 8)
-            }
-            value |= Int(input.read())
-            
+            var value:Int = readUnsignedIntegerValue(length0)
             if (parameterizedType & 0x04) != 0 {
                 value = -value
             }
-            
             return Double(value) / 1000.0
         }
         
@@ -267,7 +270,7 @@ class SpearalDecoderImpl: SpearalDecoder {
             
             let subsecondsType = (parameterizedType & 0x03)
             if subsecondsType != 0 {
-                components.nanosecond = readUnsignedIntegerValue(hours >> 5);
+                components.nanosecond = readUnsignedIntegerValue(hours >> 5)
                 if subsecondsType == 2 {
                     components.nanosecond *= 1000;
                 }
@@ -354,23 +357,34 @@ class SpearalDecoderImpl: SpearalDecoder {
         
         let description = readStringData(parameterizedType, indexOrLength: indexOrLength)
         let (className, propertyNames) = parseDescription(description)
-
-        let cls = NSClassFromString(className) as NSObject.Type
         
-        var instance = cls()
-        
-        sharedObjects.append(instance as NSObject as Any)
-        
-        let converterContext = SpearalConverterContextObjectImpl(cls)
-        let info = context.getIntrospector()!.introspect(cls)
-        let properties = info.properties
-        for propertyName in propertyNames {
-            if contains(properties, propertyName) {
-                converterContext._property = propertyName
-                let value:AnyObject? = context.convert(readAny(), context: converterContext) as NSObject? as AnyObject?
-                instance.setValue(value, forKey: propertyName)
+        if let cls = NSClassFromString(className) as? NSObject.Type {
+            let instance = cls()
+            
+            sharedObjects.append(instance as NSObject as Any)
+            
+            let converterContext = SpearalConverterContextObjectImpl(cls)
+            let properties = context.getIntrospector()!.introspect(cls).properties
+            for propertyName in propertyNames {
+                let any = readAny()
+                if contains(properties, propertyName) {
+                    converterContext._property = propertyName
+                    let value:AnyObject? = context.convert(any, context: converterContext) as? NSObject as AnyObject?
+                    instance.setValue(value, forKey: propertyName)
+                }
             }
+            
+            return instance
         }
+        
+        let instance = SpearalUnsupportedClassInstance(className)
+        
+        sharedObjects.append(instance)
+        
+        for propertyName in propertyNames {
+            instance.properties[propertyName] = readAny() as? NSObject? as AnyObject?
+        }
+        
         return instance
     }
     
@@ -433,14 +447,18 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     private func readUnsignedIntegerValue(length0:UInt8) -> Int {
         var value:Int = 0
-        if length0 >= 3 {
+        switch length0 {
+        case 3:
             value |= (Int(input.read()) << 24)
-        }
-        if length0 >= 2 {
             value |= (Int(input.read()) << 16)
-        }
-        if length0 >= 1 {
             value |= (Int(input.read()) << 8)
+        case 2:
+            value |= (Int(input.read()) << 16)
+            value |= (Int(input.read()) << 8)
+        case 1:
+            value |= (Int(input.read()) << 8)
+        default:
+            break
         }
         value |= Int(input.read())
         return value

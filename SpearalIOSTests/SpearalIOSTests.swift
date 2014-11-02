@@ -562,9 +562,29 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertTrue(personCopy._$isDefined("age"))
         
         XCTAssertEqual(personCopy.firstName!, person.firstName!)
-        XCTAssertEqual(personCopy.firstName!, person.firstName!)
+        XCTAssertEqual(personCopy.lastName!, person.lastName!)
         XCTAssertEqual(personCopy.description_!, personCopy.description_!)
-        XCTAssertEqual(personCopy.firstName!, person.firstName!)
+        XCTAssertEqual(personCopy.age!, person.age!)
+        
+        person = Person()
+        
+        person.firstName = nil
+        
+        XCTAssertTrue(person._$isDefined("firstName"))
+        XCTAssertFalse(person._$isDefined("lastName"))
+        XCTAssertFalse(person._$isDefined("description_"))
+        XCTAssertFalse(person._$isDefined("age"))
+
+        XCTAssertNil(person.firstName)
+        
+        personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy) as Person
+        
+        XCTAssertTrue(personCopy._$isDefined("firstName"))
+        XCTAssertFalse(personCopy._$isDefined("lastName"))
+        XCTAssertFalse(personCopy._$isDefined("description_"))
+        XCTAssertFalse(personCopy._$isDefined("age"))
+        
+        XCTAssertNil(personCopy.firstName)
     }
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1, aliasStrategy:SpearalAliasStrategy? = nil) -> Any? {

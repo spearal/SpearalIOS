@@ -132,6 +132,19 @@ public protocol SpearalContext {
     func convert(any:Any?, context:SpearalConverterContext) -> Any?
 }
 
+@objc(SpearalUnsupportedClassInstance)
+public class SpearalUnsupportedClassInstance: NSObject {
+    
+    public let className:String
+    public var properties:[String: AnyObject?]
+    
+    public init(_ className:String) {
+        self.className = className
+        self.properties = [String: AnyObject?]()
+    }
+}
+
+
 @objc(SpearalEnum)
 public class SpearalEnum: NSObject {
     
