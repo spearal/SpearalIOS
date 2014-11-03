@@ -78,9 +78,6 @@ class SpearalIntrospectorImpl: SpearalIntrospector {
         if !name.isEmpty {
             return name
         }
-        if any is AnyClass {
-            return "Swift.AnyClass"
-        }
         if reflect(any).disposition == MirrorDisposition.Tuple {
             return "Swift.Tuple"
         }
