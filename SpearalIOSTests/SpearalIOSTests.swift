@@ -57,10 +57,13 @@ class InMemorySpearalInput: SpearalInput {
     
     func read() -> UInt8 {
         assert(index < length, "EOF")
+        
         return bytes[index++]
     }
     
     func read(count:Int) -> [UInt8] {
+        assert(index + count <= data.length, "EOF")
+        
         var bytes = [UInt8](count: count, repeatedValue: 0)
         data.getBytes(&bytes, range: NSRange(location: index, length: count))
         index += count
@@ -373,12 +376,7 @@ class SpearalIOSTests: XCTestCase {
             
             class SalutationCoder: SpearalCoder {
                 func encode(encoder:SpearalExtendedEncoder, value:Any) {
-                    switch value as Salutation {
-                    case .MR:
-                        encoder.writeEnum("Salutation", valueName: "MR")
-                    case .MS:
-                        encoder.writeEnum("Salutation", valueName: "MS")
-                    }
+                    encoder.writeEnum("Salutation", valueName: (value as Salutation).name)
                 }
             }
             
@@ -396,14 +394,7 @@ class SpearalIOSTests: XCTestCase {
 
             class SalutationConverter: SpearalConverter {
                 func convert(value:Any?, context:SpearalConverterContext) -> Any? {
-                    switch (value as SpearalEnum).valueName {
-                    case "MR":
-                        return Salutation.MR
-                    case "MS":
-                        return Salutation.MS
-                    default:
-                        return nil
-                    }
+                    return Salutation((value as SpearalEnum).valueName)
                 }
             }
             

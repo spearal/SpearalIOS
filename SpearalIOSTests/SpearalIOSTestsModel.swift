@@ -45,6 +45,29 @@ public class Person: SpearalAutoPartialable {
 }
 
 enum Salutation {
+    
     case MR
     case MS
+    
+    var name:String {
+        get {
+            switch self {
+            case .MR:
+                return "MR"
+            case .MS:
+                return "MS"
+            }
+        }
+    }
+    
+    init?(_ name:String) {
+        switch name {
+        case "MR":
+            self = .MR
+        case "MS":
+            self = .MS
+        default:
+            return nil
+        }
+    }
 }

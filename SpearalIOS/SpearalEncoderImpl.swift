@@ -108,26 +108,44 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         
         output.write(SpearalType.INTEGRAL.rawValue | inverse | length0)
         
-        if length0 >= 7 {
+        switch length0 {
+        case 7:
             output.write(value >> 56)
-        }
-        if length0 >= 6 {
             output.write(value >> 48)
-        }
-        if length0 >= 5 {
             output.write(value >> 40)
-        }
-        if length0 >= 4 {
             output.write(value >> 32)
-        }
-        if length0 >= 3 {
             output.write(value >> 24)
-        }
-        if length0 >= 2 {
             output.write(value >> 16)
-        }
-        if length0 >= 1 {
             output.write(value >> 8)
+        case 6:
+            output.write(value >> 48)
+            output.write(value >> 40)
+            output.write(value >> 32)
+            output.write(value >> 24)
+            output.write(value >> 16)
+            output.write(value >> 8)
+        case 5:
+            output.write(value >> 40)
+            output.write(value >> 32)
+            output.write(value >> 24)
+            output.write(value >> 16)
+            output.write(value >> 8)
+        case 4:
+            output.write(value >> 32)
+            output.write(value >> 24)
+            output.write(value >> 16)
+            output.write(value >> 8)
+        case 3:
+            output.write(value >> 24)
+            output.write(value >> 16)
+            output.write(value >> 8)
+        case 2:
+            output.write(value >> 16)
+            output.write(value >> 8)
+        case 1:
+            output.write(value >> 8)
+        default:
+            break
         }
         output.write(value)
     }
@@ -366,14 +384,18 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     private func writeUnsignedInt32Value(value:Int, length0:UInt8) {
-        if length0 >= 3 {
+        switch length0 {
+        case 3:
             output.write(value >> 24)
-        }
-        if length0 >= 2 {
             output.write(value >> 16)
-        }
-        if length0 >= 1 {
             output.write(value >> 8)
+        case 2:
+            output.write(value >> 16)
+            output.write(value >> 8)
+        case 1:
+            output.write(value >> 8)
+        default:
+            break
         }
         output.write(value)
     }
