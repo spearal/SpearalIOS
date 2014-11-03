@@ -382,7 +382,7 @@ class SpearalDecoderImpl: SpearalDecoder {
         sharedObjects.append(instance)
         
         for propertyName in propertyNames {
-            instance.properties[propertyName] = readAny() as? NSObject? as AnyObject?
+            instance.properties[propertyName] = readAny() as? NSObject as AnyObject?
         }
         
         return instance

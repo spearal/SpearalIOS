@@ -138,6 +138,10 @@ public class SpearalUnsupportedClassInstance: NSObject {
     public let className:String
     public var properties:[String: AnyObject?]
     
+    public override var description: String {
+        get { return "SpearalUnsupportedClassInstance(\"\(className)\"): \(properties)"}
+    }
+    
     public init(_ className:String) {
         self.className = className
         self.properties = [String: AnyObject?]()
