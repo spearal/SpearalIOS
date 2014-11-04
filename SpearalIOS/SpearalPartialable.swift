@@ -29,6 +29,38 @@ public protocol SpearalPartialable {
     var  _$definedPropertyNames:[String] { get }
 }
 
+private var propertyNamesCache = Dictionary<UnsafePointer<Void>, [String]>()
+private func getPropertyNames(anyClass:AnyClass, stopClass:AnyClass = NSObject.self) -> [String] {
+    let key = unsafeAddressOf(anyClass)
+    
+    if let propertyNames = propertyNamesCache[key] {
+        return propertyNames
+    }
+    
+    let stopClassAddress = unsafeAddressOf(stopClass)
+    
+    var propertyNames = [String]()
+    
+    for var cls:AnyClass? = anyClass;
+        cls != nil && unsafeAddressOf(cls!) != stopClassAddress;
+        cls = class_getSuperclass(cls) {
+            
+            var count:CUnsignedInt = 0
+            let list:UnsafeMutablePointer<objc_property_t> = class_copyPropertyList(cls, &count)
+            
+            for var i:Int = 0; i < Int(count); i++ {
+                let property = list[i]
+                if property_copyAttributeValue(property, "R") == nil {
+                    propertyNames.append(String.fromCString(property_getName(property))!)
+                }
+            }
+    }
+    
+    propertyNamesCache[key] = propertyNames
+    
+    return propertyNames
+}
+
 @objc(SpearalAutoPartialable)
 public class SpearalAutoPartialable: NSObject, SpearalPartialable {
     
@@ -40,7 +72,7 @@ public class SpearalAutoPartialable: NSObject, SpearalPartialable {
         
         super.init()
         
-        let propertyNames = SpearalAutoPartialable.getPropertyNames(self.dynamicType, stopClass: SpearalAutoPartialable.self)
+        let propertyNames = getPropertyNames(self.dynamicType, stopClass: SpearalAutoPartialable.self)
         for propertyName in propertyNames {
             if propertyName.isEmpty || properties[propertyName] != nil {
                 continue
@@ -49,6 +81,32 @@ public class SpearalAutoPartialable: NSObject, SpearalPartialable {
             
             self.addObserver(self, forKeyPath: propertyName, options: .New, context: &observerContext)
         }
+    }
+    
+    public override var description:String {
+        var className = NSStringFromClass(self.dynamicType)
+        if className.hasPrefix("NSKVONotifying_") {
+            className = NSStringFromClass(class_getSuperclass(self.dynamicType))
+        }
+        
+        var s = className + " {"
+        for (propertyName, defined) in properties {
+            s += "\n    " + propertyName + ": "
+            if defined {
+                var value:AnyObject? = valueForKey(propertyName)
+                if value != nil {
+                    s += "\(value!)"
+                }
+                else {
+                    s += "nil"
+                }
+            }
+            else {
+                s += "(undefined)"
+            }
+        }
+        s += "\n}"
+        return s
     }
     
     public func _$isDefined(name:String) -> Bool {
@@ -86,28 +144,5 @@ public class SpearalAutoPartialable: NSObject, SpearalPartialable {
         for propertyName in properties.keys {
             self.removeObserver(self, forKeyPath: propertyName, context: &observerContext)
         }
-    }
-    
-    private class func getPropertyNames(anyClass:AnyClass, stopClass:AnyClass = NSObject.self) -> [String] {
-        let stopClassAddress = unsafeAddressOf(stopClass)
-        
-        var propertyNames = [String]()
-        
-        for var cls:AnyClass? = anyClass;
-            cls != nil && unsafeAddressOf(cls!) != stopClassAddress;
-            cls = class_getSuperclass(cls) {
-
-            var count:CUnsignedInt = 0
-            let list:UnsafeMutablePointer<objc_property_t> = class_copyPropertyList(cls, &count)
-            
-            for var i:Int = 0; i < Int(count); i++ {
-                let property = list[i]
-                if property_copyAttributeValue(property, "R") == nil {
-                    propertyNames.append(String.fromCString(property_getName(property))!)
-                }
-            }
-        }
-        
-        return propertyNames
     }
 }
