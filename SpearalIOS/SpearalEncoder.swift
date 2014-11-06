@@ -28,6 +28,35 @@ public protocol SpearalOutput {
     func write(bytes:[UInt8])
 }
 
+public class SpearalNSDataOutput: SpearalOutput {
+    
+    private let _data:NSMutableData
+    
+    public var data:NSData {
+        return _data
+    }
+    
+    public init() {
+        _data = NSMutableData()
+    }
+    
+    public func write(var byte:UInt8) {
+        _data.appendBytes(&byte, length: 1)
+    }
+    
+    public func write(var byte:UInt64) {
+        _data.appendBytes(&byte, length: 1)
+    }
+    
+    public func write(var byte:Int) {
+        _data.appendBytes(&byte, length: 1)
+    }
+    
+    public func write(var bytes:[UInt8]) {
+        _data.appendBytes(&bytes, length: bytes.count)
+    }
+}
+
 public protocol SpearalEncoder {
     
     func writeAny(any:Any?)

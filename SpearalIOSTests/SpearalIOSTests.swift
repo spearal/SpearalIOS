@@ -21,56 +21,6 @@
 import UIKit
 import XCTest
 
-class InMemorySpearalOutput: SpearalOutput {
-    
-    let data = NSMutableData()
-    
-    func write(var byte:UInt8) {
-        data.appendBytes(&byte, length: 1)
-    }
-    
-    func write(var byte:UInt64) {
-        data.appendBytes(&byte, length: 1)
-    }
-    
-    func write(var byte:Int) {
-        data.appendBytes(&byte, length: 1)
-    }
-    
-    func write(var bytes:[UInt8]) {
-        data.appendBytes(&bytes, length: bytes.count)
-    }
-}
-
-class InMemorySpearalInput: SpearalInput {
-    
-    private let data:NSData
-    private let bytes:UnsafePointer<UInt8>
-    private let length:Int
-    private var index:Int = 0
-    
-    init(data:NSData) {
-        self.data = data
-        self.bytes = UnsafePointer<UInt8>(data.bytes)
-        self.length = data.length
-    }
-    
-    func read() -> UInt8 {
-        assert(index < length, "EOF")
-        
-        return bytes[index++]
-    }
-    
-    func read(count:Int) -> [UInt8] {
-        assert(index + count <= data.length, "EOF")
-        
-        var bytes = [UInt8](count: count, repeatedValue: 0)
-        data.getBytes(&bytes, range: NSRange(location: index, length: count))
-        index += count
-        return bytes
-    }
-}
-
 class SpearalIOSTests: XCTestCase {
     
     override func setUp() {
@@ -413,14 +363,14 @@ class SpearalIOSTests: XCTestCase {
         
         let salutation = Salutation.MR
         
-        let out = InMemorySpearalOutput()
+        let out = SpearalNSDataOutput()
         let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(salutation)
         
         let decoderFactory = DefaultSpearalFactory()
         decoderFactory.context.configure(SalutationConverterProvider(), append: false)
         
-        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data))
         let value = decoder.readAny() as Salutation
         
         XCTAssertTrue(salutation == value)
@@ -460,12 +410,12 @@ class SpearalIOSTests: XCTestCase {
         
         let bigIntegral = MyBigIntegral("13712527002344000023401203400000")
         
-        let out = InMemorySpearalOutput()
+        let out = SpearalNSDataOutput()
         let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(bigIntegral)
         
         let decoderFactory = DefaultSpearalFactory()
-        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data))
         let value = decoder.readAny() as SpearalBigIntegral
         
         XCTAssertEqual("137125270023440000234012034E5", value.representation)
@@ -505,12 +455,12 @@ class SpearalIOSTests: XCTestCase {
         
         let bigIntegral = MyBigFloating("1234567890.948576")
         
-        let out = InMemorySpearalOutput()
+        let out = SpearalNSDataOutput()
         let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(bigIntegral)
         
         let decoderFactory = DefaultSpearalFactory()
-        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data))
         let value = decoder.readAny() as SpearalBigFloating
         
         XCTAssertEqual("1234567890.948576", value.representation)
@@ -589,7 +539,7 @@ class SpearalIOSTests: XCTestCase {
             decoderFactory.context.configure(aliasStrategy!)
         }
         
-        let out = InMemorySpearalOutput()
+        let out = SpearalNSDataOutput()
         let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(any)
         
@@ -597,12 +547,12 @@ class SpearalIOSTests: XCTestCase {
             XCTAssertEqual(out.data.length, expectedSize)
         }
 
-        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data))
         return decoder.readAny()
     }
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1, encoderFactory:SpearalFactory, decoderFactory:SpearalFactory) -> Any? {
-        let out = InMemorySpearalOutput()
+        let out = SpearalNSDataOutput()
         let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
         encoder.writeAny(any)
         
@@ -610,12 +560,12 @@ class SpearalIOSTests: XCTestCase {
             XCTAssertEqual(out.data.length, expectedSize)
         }
         
-        let decoder:SpearalDecoder = decoderFactory.newDecoder(InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data))
         return decoder.readAny()
     }
     
     private func encodeDecode(any1:Any?, any2:Any?, expectedSize:Int = -1) -> (Any?, Any?) {
-        let out = InMemorySpearalOutput()
+        let out = SpearalNSDataOutput()
         let encoder:SpearalEncoder = DefaultSpearalFactory().newEncoder(out)
         encoder.writeAny(any1)
         encoder.writeAny(any2)
@@ -624,7 +574,7 @@ class SpearalIOSTests: XCTestCase {
             XCTAssertEqual(out.data.length, expectedSize)
         }
         
-        let decoder:SpearalDecoder = DefaultSpearalFactory().newDecoder(InMemorySpearalInput(data: out.data))
+        let decoder:SpearalDecoder = DefaultSpearalFactory().newDecoder(SpearalNSDataInput(data: out.data))
         return (decoder.readAny(), decoder.readAny())
     }
 }

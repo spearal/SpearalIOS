@@ -27,6 +27,35 @@ public protocol SpearalInput {
     func read(count:Int) -> [UInt8]
 }
 
+public class SpearalNSDataInput: SpearalInput {
+    
+    private let data:NSData
+    private let bytes:UnsafePointer<UInt8>
+    private let length:Int
+    private var index:Int = 0
+    
+    public init(data:NSData) {
+        self.data = data
+        self.bytes = UnsafePointer<UInt8>(data.bytes)
+        self.length = data.length
+    }
+    
+    public func read() -> UInt8 {
+        assert(index < length, "EOF")
+        
+        return bytes[index++]
+    }
+    
+    public func read(count:Int) -> [UInt8] {
+        assert(index + count <= data.length, "EOF")
+        
+        var bytes = [UInt8](count: count, repeatedValue: 0)
+        data.getBytes(&bytes, range: NSRange(location: index, length: count))
+        index += count
+        return bytes
+    }
+}
+
 public protocol SpearalDecoder {
     
     func readAny() -> Any?
