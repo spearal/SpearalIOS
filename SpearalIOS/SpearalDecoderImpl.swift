@@ -372,6 +372,9 @@ class SpearalDecoderImpl: SpearalDecoder {
                     let value:AnyObject? = context.convert(any, context: converterContext) as? NSObject as AnyObject?
                     instance.setValue(value, forKey: propertyName)
                 }
+                else {
+                    println("[DEBUG] Ignoring unknown \(className) property: \(propertyName)")
+                }
             }
             
             return instance
