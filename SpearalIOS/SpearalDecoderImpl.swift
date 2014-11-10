@@ -59,7 +59,7 @@ private class SpearalConverterContextMapValueImpl: SpearalConverterContextMapVal
 class SpearalDecoderImpl: SpearalDecoder {
     
     let context:SpearalContext
-    let input: SpearalInput
+    let input:SpearalInput
 
     private var sharedStrings:[String]
     private var sharedObjects:[Any]
@@ -67,7 +67,7 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     private let calendar:NSCalendar
     
-    required init(context:SpearalContext, input: SpearalInput) {
+    required init(context:SpearalContext, input:SpearalInput) {
         self.context = context
         self.input = input
 
@@ -75,7 +75,7 @@ class SpearalDecoderImpl: SpearalDecoder {
         self.sharedObjects = [Any]()
         self.depth = 0
         
-        self.calendar = NSCalendar(identifier: NSGregorianCalendar)!
+        self.calendar = NSCalendar(identifier:NSGregorianCalendar)!
     }
     
     func readAny() -> Any? {
@@ -307,7 +307,7 @@ class SpearalDecoderImpl: SpearalDecoder {
         return collection
     }
     
-    func readMap(parameterizedType:UInt8) -> [NSObject : AnyObject] {
+    func readMap(parameterizedType:UInt8) -> [NSObject: AnyObject] {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
@@ -404,7 +404,7 @@ class SpearalDecoderImpl: SpearalDecoder {
         }
         
         var propertyNames = classNamePropertyNames[1].componentsSeparatedByString(",").filter({
-            (elt: String) -> Bool in return !elt.isEmpty
+            (elt:String) -> Bool in return !elt.isEmpty
         })
         
         if aliasStrategy != nil {
