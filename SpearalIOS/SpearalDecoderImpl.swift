@@ -60,6 +60,7 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     let context:SpearalContext
     let input:SpearalInput
+    let printer:SpearalPrinter?
 
     private var sharedStrings:[String]
     private var sharedObjects:[Any]
@@ -67,9 +68,10 @@ class SpearalDecoderImpl: SpearalDecoder {
     
     private let calendar:NSCalendar
     
-    required init(context:SpearalContext, input:SpearalInput) {
+    init(context:SpearalContext, input:SpearalInput, printer:SpearalPrinter? = nil) {
         self.context = context
         self.input = input
+        self.printer = printer
 
         self.sharedStrings = [String]()
         self.sharedObjects = [Any]()
@@ -89,10 +91,13 @@ class SpearalDecoderImpl: SpearalDecoder {
             switch type {
             case .NULL:
                 value = nil
+                printer?.printNil()
             case .TRUE:
                 value = true
+                printer?.printBoolean(true)
             case .FALSE:
                 value = false
+                printer?.printBoolean(false)
 
             case .INTEGRAL:
                 value = readIntegral(parameterizedType)
@@ -129,6 +134,8 @@ class SpearalDecoderImpl: SpearalDecoder {
         
         if --depth == 0 {
             value = context.convert(value, context: SpearalConverterContextRootImpl())
+            
+            //println((printer as SpearalStringPrinter).representation)
         }
 
         return value
@@ -183,40 +190,52 @@ class SpearalDecoderImpl: SpearalDecoder {
             value = -value;
         }
         
+        printer?.printIntegral(value)
+        
         return value
     }
     
     func readBigIntegral(parameterizedType:UInt8) -> SpearalBigIntegral {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
+        var value:SpearalBigIntegral
+        
         if SpearalDecoderImpl.isStringReference(parameterizedType) {
-            return SpearalBigIntegral(sharedStrings[indexOrLength])
+            value = SpearalBigIntegral(sharedStrings[indexOrLength])
+        }
+        else {
+            value = SpearalBigIntegral(readBigNumberData(indexOrLength))
         }
         
-        return SpearalBigIntegral(readBigNumberData(indexOrLength))
+        printer?.printBigIntegral(value.representation)
+        
+        return value
     }
     
     func readFloating(parameterizedType:UInt8) -> Double {
-        if (parameterizedType & 0x08) != 0 {
-            let length0 = (parameterizedType & 0x03)
-            var value:Int = readUnsignedIntegerValue(length0)
-            if (parameterizedType & 0x04) != 0 {
-                value = -value
-            }
-            return Double(value) / 1000.0
-        }
-        
         var value:Double = Double.NaN
         
-        let pointer = doubleToUInt8MutablePointer(&value)
-        pointer[7] = input.read()
-        pointer[6] = input.read()
-        pointer[5] = input.read()
-        pointer[4] = input.read()
-        pointer[3] = input.read()
-        pointer[2] = input.read()
-        pointer[1] = input.read()
-        pointer[0] = input.read()
+        if (parameterizedType & 0x08) != 0 {
+            let length0 = (parameterizedType & 0x03)
+            var intValue:Int = readUnsignedIntegerValue(length0)
+            if (parameterizedType & 0x04) != 0 {
+                intValue = -intValue
+            }
+            value = Double(intValue) / 1000.0
+        }
+        else {
+            let pointer = doubleToUInt8MutablePointer(&value)
+            pointer[7] = input.read()
+            pointer[6] = input.read()
+            pointer[5] = input.read()
+            pointer[4] = input.read()
+            pointer[3] = input.read()
+            pointer[2] = input.read()
+            pointer[1] = input.read()
+            pointer[0] = input.read()
+        }
+        
+        printer?.printFloating(value)
         
         return value
     }
@@ -224,26 +243,41 @@ class SpearalDecoderImpl: SpearalDecoder {
     func readBigFloating(parameterizedType:UInt8) -> SpearalBigFloating {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
+        var value:SpearalBigFloating
+        
         if SpearalDecoderImpl.isStringReference(parameterizedType) {
-            return SpearalBigFloating(sharedStrings[indexOrLength])
+            value = SpearalBigFloating(sharedStrings[indexOrLength])
+        }
+        else {
+            value = SpearalBigFloating(readBigNumberData(indexOrLength))
         }
         
-        return SpearalBigFloating(readBigNumberData(indexOrLength))
+        printer?.printBigFloating(value.representation)
+        
+        return value
     }
     
     func readString(parameterizedType:UInt8) -> String {
-        return readStringData(parameterizedType)
+        let value = readStringData(parameterizedType)
+        printer?.printString(value)
+        return value
     }
     
     func readByteArray(parameterizedType:UInt8) -> [UInt8] {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
+        var value:[UInt8]
+        
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
-            return sharedObjects[indexOrLength] as [UInt8]
+            printer?.printByteArrayReference(indexOrLength)
+            value = sharedObjects[indexOrLength] as [UInt8]
+        }
+        else {
+            value = input.read(indexOrLength)
+            printer?.printByteArray(value, referenceIndex: sharedObjects.count)
+            sharedObjects.append(value)
         }
         
-        let value:[UInt8] = input.read(indexOrLength)
-        sharedObjects.append(value)
         return value
     }
     
@@ -280,19 +314,23 @@ class SpearalDecoderImpl: SpearalDecoder {
             }
         }
         
-        return calendar.dateFromComponents(components)!
+        let value = calendar.dateFromComponents(components)!
+        printer?.printDateTime(value)
+        return value
     }
     
     func readCollection(parameterizedType:UInt8) -> [AnyObject] {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            printer?.printCollectionReference(indexOrLength)
             return sharedObjects[indexOrLength] as [AnyObject]
         }
         
         let null = NSNull()
 
         var collection = [AnyObject](count: indexOrLength, repeatedValue: null)
+        printer?.printStartCollection(sharedObjects.count)
         sharedObjects.append(collection)
         
         let converterContext = SpearalConverterContextCollectionImpl()
@@ -304,6 +342,8 @@ class SpearalDecoderImpl: SpearalDecoder {
             collection[i] = value as? NSObject ?? null
         }
         
+        printer?.printEndCollection()
+        
         return collection
     }
     
@@ -311,12 +351,14 @@ class SpearalDecoderImpl: SpearalDecoder {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            printer?.printMapReference(indexOrLength)
             return sharedObjects[indexOrLength] as [NSObject: AnyObject]
         }
         
         let null = NSNull()
         
         var map = [NSObject: AnyObject](minimumCapacity: indexOrLength)
+        printer?.printStartMap(sharedObjects.count)
         sharedObjects.append(map)
         
         let converterKeyContext = SpearalConverterContextMapKeyImpl()
@@ -332,6 +374,8 @@ class SpearalDecoderImpl: SpearalDecoder {
             map[key] = val
         }
         
+        printer?.printEndMap()
+        
         return map
     }
     
@@ -339,12 +383,18 @@ class SpearalDecoderImpl: SpearalDecoder {
         let remoteClassName = readStringData(parameterizedType)
         let valueName =  readString(input.read())
         
+        printer?.printEnum(remoteClassName, valueName: valueName)
+        
         let localClassName = context.getAliasStrategy()?.remoteToLocalClassName(remoteClassName) ?? remoteClassName
+        
         return SpearalEnum(localClassName, valueName: valueName)
     }
     
     func readClass(parameterizedType:UInt8) -> AnyClass? {
         let name = readStringData(parameterizedType)
+        
+        printer?.printClass(name)
+        
         return context.getIntrospector()!.classForName(name)
     }
     
@@ -352,71 +402,80 @@ class SpearalDecoderImpl: SpearalDecoder {
         let indexOrLength = readIndexOrLength(parameterizedType)
         
         if SpearalDecoderImpl.isObjectReference(parameterizedType) {
+            printer?.printBeanReference(indexOrLength)
             return sharedObjects[indexOrLength]
         }
         
         let description = readStringData(parameterizedType, indexOrLength: indexOrLength)
-        let (className, propertyNames) = parseDescription(description)
+        let (remoteClassName, localClassName, remotePropertyNames, localPropertyNames) = parseDescription(description)
         
-        if let cls = NSClassFromString(className) as? NSObject.Type {
+        printer?.printStartBean(remoteClassName, referenceIndex: sharedObjects.count)
+        
+        if let cls = NSClassFromString(localClassName) as? NSObject.Type {
             let instance = cls()
-            
             sharedObjects.append(instance as NSObject as Any)
             
             let converterContext = SpearalConverterContextObjectImpl(cls)
             let properties = context.getIntrospector()!.introspect(cls).properties
-            for propertyName in propertyNames {
+            
+            for (i, localPropertyName) in enumerate(localPropertyNames) {
+                printer?.printBeanProperty(remotePropertyNames[i])
+                
                 let any = readAny()
-                if contains(properties, propertyName) {
-                    converterContext._property = propertyName
+                
+                if contains(properties, localPropertyName) {
+                    converterContext._property = localPropertyName
                     let value:AnyObject? = context.convert(any, context: converterContext) as? NSObject as AnyObject?
-                    instance.setValue(value, forKey: propertyName)
-                }
-                else {
-                    println("[DEBUG] Ignoring unknown \(className) property: \(propertyName)")
+                    instance.setValue(value, forKey: localPropertyName)
                 }
             }
+            
+            printer?.printEndBean()
             
             return instance
         }
         
-        let instance = SpearalUnsupportedClassInstance(className)
-        
+        let instance = SpearalUnsupportedClassInstance(localClassName)
         sharedObjects.append(instance)
-        
-        for propertyName in propertyNames {
-            instance.properties[propertyName] = readAny() as? NSObject as AnyObject?
+
+        for remotePropertyName in remotePropertyNames {
+            printer?.printBeanProperty(remotePropertyName)
+            instance.properties[remotePropertyName] = readAny() as? NSObject as AnyObject?
         }
+        
+        printer?.printEndBean()
         
         return instance
     }
     
-    private func parseDescription(description:String) -> (String, [String]) {
+    private func parseDescription(description:String) -> (String, String, [String], [String]) {
         let aliasStrategy = context.getAliasStrategy()
-        
         let classNamePropertyNames = description.componentsSeparatedByString("#")
         
         let remoteClassName = classNamePropertyNames[0]
         let localClassName = aliasStrategy?.remoteToLocalClassName(remoteClassName) ?? remoteClassName
         
         if classNamePropertyNames.count == 1 || classNamePropertyNames[1].isEmpty {
-            return (localClassName, [])
+            return (remoteClassName, localClassName, [], [])
         }
         
-        var propertyNames = classNamePropertyNames[1].componentsSeparatedByString(",").filter({
+        let remotePropertyNames = classNamePropertyNames[1].componentsSeparatedByString(",").filter({
             (elt:String) -> Bool in return !elt.isEmpty
         })
         
-        if aliasStrategy != nil {
-            let aliases = aliasStrategy!.remoteToLocalProperties(localClassName)
-            
-            let max = (propertyNames.count - 1)
-            for i in 0...max {
-                propertyNames[i] = aliases[propertyNames[i]] ?? propertyNames[i]
-            }
+        if remotePropertyNames.isEmpty {
+            return (remoteClassName, localClassName, [], [])
         }
         
-        return (localClassName, propertyNames)
+        let aliases = aliasStrategy?.remoteToLocalProperties(localClassName) ?? [String: String]()
+        
+        let localPropertyNames:[String] = aliases.isEmpty ? remotePropertyNames : (
+            remotePropertyNames.map { (remotePropertyName) -> String in
+                return aliases[remotePropertyName] ?? remotePropertyName
+            }
+        )
+        
+        return (remoteClassName, localClassName, remotePropertyNames, localPropertyNames)
     }
     
     private func readStringData(parameterizedType:UInt8) -> String {

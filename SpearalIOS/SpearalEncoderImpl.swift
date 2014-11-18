@@ -24,6 +24,10 @@ private class StringIndexMap {
     
     private var references:Dictionary<String, Int> = Dictionary<String, Int>()
     
+    var count:Int {
+        return references.count
+    }
+    
     func putIfAbsent(item:String) -> Int {
         if let index = references[item] {
             return index
@@ -37,6 +41,10 @@ private class IdentityIndexMap {
     
     private var references:Dictionary<UnsafePointer<Void>, Int> = Dictionary<UnsafePointer<Void>, Int>()
     
+    var count:Int {
+        return references.count
+    }
+    
     func putIfAbsent(p:UnsafePointer<Void>) -> Int {
         if let index = references[p] {
             return index
@@ -49,22 +57,20 @@ private class IdentityIndexMap {
 class SpearalEncoderImpl : SpearalExtendedEncoder {
     
     let context:SpearalContext
-    let filter:SpearalPropertyFilter
     let output:SpearalOutput
+    let printer:SpearalPrinter?
+    let filter:SpearalPropertyFilter?
 
     private let sharedStrings:StringIndexMap
     private let sharedObjects:IdentityIndexMap
     
     private let calendar:NSCalendar
     
-    convenience init(context:SpearalContext, output: SpearalOutput) {
-        self.init(context: context, filter: SpearalPropertyFilterImpl(context), output: output)
-    }
-    
-    init(context:SpearalContext, filter:SpearalPropertyFilter, output: SpearalOutput) {
+    init(context:SpearalContext, output: SpearalOutput, printer:SpearalPrinter? = nil, filter:SpearalPropertyFilter? = nil) {
         self.context = context
-        self.filter = filter
         self.output = output
+        self.printer = printer
+        self.filter = filter
         
         self.sharedStrings = StringIndexMap()
         self.sharedObjects = IdentityIndexMap()
@@ -85,14 +91,19 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     func writeNil() {
+        printer?.printNil()
+        
         output.write(SpearalType.NULL.rawValue)
     }
     
     func writeBool(value:Bool) {
+        printer?.printBoolean(value)
+        
         output.write((value ? SpearalType.TRUE : SpearalType.FALSE).rawValue)
     }
     
     func writeInt(var value:Int) {
+        printer?.printIntegral(value)
         
         if value == Int.min {
             output.write([SpearalType.INTEGRAL.rawValue | 7, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
@@ -151,10 +162,14 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     func writeBigIntegral(value:String) {
+        printer?.printBigIntegral(value)
+        
         writeBigNumberData(SpearalType.BIG_INTEGRAL, representation: exponentize(value))
     }
     
     func writeDouble(value:Double) {
+        printer?.printFloating(value)
+        
         // value != NaN, +/- Infinity and -0.0
         if value.isFinite && value.floatingPointClass != FloatingPointClassification.NegativeZero &&
            value >= Double(Int.min) && value <= Double(Int.max) {
@@ -196,15 +211,21 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     }
     
     func writeBigFloating(value:String) {
+        printer?.printBigFloating(value)
+        
         writeBigNumberData(SpearalType.BIG_FLOATING, representation: value)
     }
     
     func writeString(value:String) {
+        printer?.printString(value)
+        
         writeStringData(SpearalType.STRING, value: value)
     }
     
     func writeUInt8Array(value:[UInt8]) {
         if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, id: unsafeBitCast(value, UnsafePointer<Void>.self)) {
+            printer?.printByteArray(value, referenceIndex: sharedObjects.count - 1)
+
             writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.rawValue, value: value.count)
             output.write(value)
         }
@@ -214,6 +235,9 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         if !putAndWriteObjectReference(SpearalType.BYTE_ARRAY, id: unsafeAddressOf(value)) {
             var bytes = [UInt8](count: value.length, repeatedValue: 0)
             value.getBytes(&bytes, length: value.length)
+            
+            printer?.printByteArray(bytes, referenceIndex: sharedObjects.count - 1)
+
             writeTypeUnsignedInt32(SpearalType.BYTE_ARRAY.rawValue, value: bytes.count)
             output.write(bytes)
         }
@@ -221,24 +245,34 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     
     func writeNSArray(value:NSArray) {
         if !putAndWriteObjectReference(SpearalType.COLLECTION, id: unsafeAddressOf(value)) {
+            printer?.printStartCollection(sharedObjects.count - 1)
+            
             writeTypeUnsignedInt32(SpearalType.COLLECTION.rawValue, value: value.count)
             for elt in value {
                 writeAny(SpearalEncoderImpl.anyObjectToAny(elt))
             }
+            
+            printer?.printEndCollection()
         }
     }
     
     func writeNSDictionary(value:NSDictionary) {
         if !putAndWriteObjectReference(SpearalType.MAP, id: unsafeAddressOf(value)) {
+            printer?.printStartMap(sharedObjects.count - 1)
+            
             writeTypeUnsignedInt32(SpearalType.MAP.rawValue, value: value.count)
             for (key, val) in value {
                 writeAny(SpearalEncoderImpl.anyObjectToAny(key))
                 writeAny(SpearalEncoderImpl.anyObjectToAny(val))
             }
+            
+            printer?.printEndMap()
         }
     }
     
     func writeNSDate(value:NSDate) {
+        printer?.printDateTime(value)
+        
         let components = calendar.components(
             .CalendarUnitYear | .CalendarUnitMonth | .CalendarUnitDay |
             .CalendarUnitHour | .CalendarUnitMinute | .CalendarUnitSecond | .CalendarUnitNanosecond, fromDate: value)
@@ -291,12 +325,18 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     
     func writeEnum(className:String, valueName:String) {
         let remoteClassName = context.getAliasStrategy()?.localToRemoteClassName(className) ?? className
+        
+        printer?.printEnum(remoteClassName, valueName: valueName)
+        
         writeStringData(SpearalType.ENUM, value: remoteClassName)
         writeStringData(SpearalType.STRING, value: valueName)
     }
     
     func writeAnyClass(value:AnyClass) {
         let name = context.getIntrospector()!.classNameOfAnyClass(value)
+        
+        printer?.printClass(name)
+        
         writeStringData(SpearalType.CLASS, value: name)
     }
     
@@ -304,7 +344,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         if !putAndWriteObjectReference(SpearalType.BEAN, id: unsafeAddressOf(value)) {
             let type = value.dynamicType
 
-            var properties = filter.get(type)
+            var properties = filter?.get(type) ?? context.getIntrospector()!.introspect(type).properties
             if let partial  = value as? SpearalPartialable {
                 let definedProperties = partial._$definedPropertyNames
                 properties = properties.filter({ (elt:String) -> Bool in
@@ -312,14 +352,21 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
                 })
             }
             
-            let description:String = createDescription(type, propertyNames: properties)
+            let (description, remoteClassName, remotePropertyNames) = createDescription(type, propertyNames: properties)
+
+            printer?.printStartBean(remoteClassName, referenceIndex: sharedObjects.count - 1)
             
             writeStringData(SpearalType.BEAN, value: description)
             
+            var i = 0
             for property in properties {
+                printer?.printBeanProperty(remotePropertyNames[i++])
+                
                 let anyObject:AnyObject? = value.valueForKey(property)
                 writeAny(SpearalEncoderImpl.anyObjectToAny(anyObject))
             }
+            
+            printer?.printEndBean()
         }
     }
     
@@ -327,20 +374,20 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         return anyObject as NSObject? as Any?
     }
     
-    private func createDescription(type:AnyClass, propertyNames:[String]) -> String {
+    private func createDescription(type:AnyClass, propertyNames:[String]) -> (String, String, [String]) {
         let aliasStrategy = context.getAliasStrategy()
         let localClassName = context.getIntrospector()?.classNameOfAnyClass(type) ?? ""
         let remoteClassName = aliasStrategy?.localToRemoteClassName(localClassName) ?? localClassName
         let propertyNameAliases = aliasStrategy?.localToRemoteProperties(localClassName) ?? [String: String]()
         
         if propertyNameAliases.isEmpty {
-            return remoteClassName + "#" + ",".join(propertyNames)
+            return (remoteClassName + "#" + ",".join(propertyNames), remoteClassName, propertyNames)
         }
 
         let remotePropertyNames = propertyNames.map({ (localPropertyName:String) -> String in
             return propertyNameAliases[localPropertyName] ?? localPropertyName
         })
-        return remoteClassName + "#" + ",".join(remotePropertyNames)
+        return (remoteClassName + "#" + ",".join(remotePropertyNames), remoteClassName, propertyNames)
     }
     
     private func writeStringData(type:SpearalType, value:String) {
@@ -370,6 +417,21 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
     private func putAndWriteObjectReference(type:SpearalType, id:UnsafePointer<Void>) -> Bool {
         let index = sharedObjects.putIfAbsent(id)
         if index != -1 {
+            if let printer = printer {
+                switch type {
+                case .BYTE_ARRAY:
+                    printer.printByteArrayReference(index)
+                case .COLLECTION:
+                    printer.printCollectionReference(index)
+                case .MAP:
+                    printer.printMapReference(index)
+                case .BEAN:
+                    printer.printBeanReference(index)
+                default:
+                    break
+                }
+            }
+            
             writeTypeUnsignedInt32(type.rawValue | 0x08, value: index)
             return true
         }

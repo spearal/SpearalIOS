@@ -24,10 +24,15 @@ public protocol SpearalFactory {
     
     var context:SpearalContext { get }
     
+    func newFilter() -> SpearalPropertyFilter
+    
     func newEncoder(output:SpearalOutput) -> SpearalEncoder
-    // func newEncoder(output:SpearalOutput, filter:SpearalPropertyFilter) -> SpearalEncoder
+    func newEncoder(output:SpearalOutput, printer:SpearalPrinter?) -> SpearalEncoder
+    func newEncoder(output:SpearalOutput, filter:SpearalPropertyFilter?) -> SpearalEncoder
+    func newEncoder(output:SpearalOutput, printer:SpearalPrinter?, filter:SpearalPropertyFilter?) -> SpearalEncoder
     
     func newDecoder(input:SpearalInput) -> SpearalDecoder
+    func newDecoder(input:SpearalInput, printer:SpearalPrinter?) -> SpearalDecoder
 }
 
 public class DefaultSpearalFactory: SpearalFactory {
@@ -42,14 +47,32 @@ public class DefaultSpearalFactory: SpearalFactory {
             .configure(SpearalStandardCoderProvider(), append: false)
     }
     
+    public func newFilter() -> SpearalPropertyFilter {
+        return SpearalPropertyFilterImpl(context)
+    }
+    
     public func newEncoder(output:SpearalOutput) -> SpearalEncoder {
         return SpearalEncoderImpl(context: context, output: output)
     }
-
-    // func newEncoder(output:SpearalOutput, filter:SpearalPropertyFilter) -> SpearalEncoder
+    
+    public func newEncoder(output:SpearalOutput, printer:SpearalPrinter?) -> SpearalEncoder {
+        return SpearalEncoderImpl(context: context, output: output, printer: printer)
+    }
+    
+    public func newEncoder(output:SpearalOutput, filter:SpearalPropertyFilter?) -> SpearalEncoder {
+        return SpearalEncoderImpl(context: context, output: output, printer: nil, filter: filter)
+    }
+    
+    public func newEncoder(output:SpearalOutput, printer:SpearalPrinter?, filter:SpearalPropertyFilter?) -> SpearalEncoder {
+        return SpearalEncoderImpl(context: context, output: output, printer: printer, filter: filter)
+    }
     
     public func newDecoder(input:SpearalInput) -> SpearalDecoder {
         return SpearalDecoderImpl(context: context, input: input)
+    }
+    
+    public func newDecoder(input:SpearalInput, printer:SpearalPrinter?) -> SpearalDecoder {
+        return SpearalDecoderImpl(context: context, input: input, printer: printer)
     }
 }
 

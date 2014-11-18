@@ -481,7 +481,7 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertFalse(person._$isDefined("description_"))
         XCTAssertFalse(person._$isDefined("age"))
         
-        var personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy) as Person
+        var personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy, print: true) as Person
         
         XCTAssertFalse(personCopy._$isDefined("firstName"))
         XCTAssertFalse(personCopy._$isDefined("lastName"))
@@ -495,7 +495,7 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertTrue(person._$isDefined("description_"))
         XCTAssertTrue(person._$isDefined("age"))
         
-        personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy) as Person
+        personCopy = encodeDecode(person as NSObject as Any, expectedSize: -1, aliasStrategy: aliasStrategy, print: true) as Person
 
         XCTAssertTrue(personCopy._$isDefined("firstName"))
         XCTAssertTrue(personCopy._$isDefined("lastName"))
@@ -528,7 +528,8 @@ class SpearalIOSTests: XCTestCase {
         XCTAssertNil(personCopy.firstName)
     }
     
-    private func encodeDecode(any:Any?, expectedSize:Int = -1, aliasStrategy:SpearalAliasStrategy? = nil) -> Any? {
+    private func encodeDecode(any:Any?, expectedSize:Int = -1, aliasStrategy:SpearalAliasStrategy? = nil, print:Bool = false) -> Any? {
+        
         let encoderFactory = DefaultSpearalFactory()
         if aliasStrategy != nil {
             encoderFactory.context.configure(aliasStrategy!)
@@ -538,17 +539,35 @@ class SpearalIOSTests: XCTestCase {
         if aliasStrategy != nil {
             decoderFactory.context.configure(aliasStrategy!)
         }
-        
+
+        var printer:SpearalPrinter? = nil
+        if print {
+            printer = SpearalDefaultPrinter(SpearalPrinterStringOutput())
+        }
         let out = SpearalNSDataOutput()
-        let encoder:SpearalEncoder = encoderFactory.newEncoder(out)
+        let encoder:SpearalEncoder = encoderFactory.newEncoder(out, printer: printer)
+        
         encoder.writeAny(any)
+        
+        if print {
+            println((printer!.output as SpearalPrinterStringOutput).value)
+        }
         
         if expectedSize != -1 {
             XCTAssertEqual(out.data.length, expectedSize)
         }
 
-        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data))
-        return decoder.readAny()
+        if print {
+            printer = SpearalDefaultPrinter(SpearalPrinterStringOutput())
+        }
+        let decoder:SpearalDecoder = decoderFactory.newDecoder(SpearalNSDataInput(data: out.data), printer: printer)
+        let result = decoder.readAny()
+        
+        if print {
+            println((printer!.output as SpearalPrinterStringOutput).value)
+        }
+        
+        return result
     }
     
     private func encodeDecode(any:Any?, expectedSize:Int = -1, encoderFactory:SpearalFactory, decoderFactory:SpearalFactory) -> Any? {
