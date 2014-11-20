@@ -387,7 +387,7 @@ class SpearalEncoderImpl : SpearalExtendedEncoder {
         let remotePropertyNames = propertyNames.map({ (localPropertyName:String) -> String in
             return propertyNameAliases[localPropertyName] ?? localPropertyName
         })
-        return (remoteClassName + "#" + ",".join(remotePropertyNames), remoteClassName, propertyNames)
+        return (remoteClassName + "#" + ",".join(remotePropertyNames), remoteClassName, remotePropertyNames)
     }
     
     private func writeStringData(type:SpearalType, value:String) {
